@@ -1,0 +1,10 @@
+# .npmignore
+.git/
+.idea/
+node_modules/
+src/
+.prettierrc
+builder.js
+package-lock.json
+tsconfig.json
+tslint.json
