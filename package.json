@@ -1,6 +1,6 @@
 {
   "name": "kyatsujs",
-  "version": "0.0.2",
+  "version": "0.1.0",
   "description": "A cool discord.js assistant to create bots in a simple way. Bye bye laborious tasks !",
   "main": "lib/index.js",
   "types": "lib/types/index.d.ts",
