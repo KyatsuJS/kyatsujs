@@ -8,6 +8,8 @@ Kyatsu is a NPM package that permits you to create Discord bots in just few line
 ---
 
 Author: [elouann-h](https://github.com/elouann-h)
+NPM: https://npmjs.org/package/kyatsujs
+GitHub: https://github.com/kyatsujs
 
 ---
 
