@@ -1,15 +1,13 @@
 {
   "name": "kyatsujs",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "A cool discord.js assistant to create bots in a simple way. Bye bye laborious tasks !",
   "main": "lib/index.js",
   "types": "lib/types/index.d.ts",
   "scripts": {
     "lint": "tslint -p tsconfig.json",
     "prettier": "prettier -w src",
-
     "save": "git add src/ && git add lib/ && git add typings/",
-
     "run-builder": "node builder.js",
     "build": "npm run run-builder && tsc && npm run save"
   },
@@ -20,7 +18,12 @@
   "directories": {
     "lib": "lib"
   },
-  "files": ["lib", "package.json", "README.md", "tsconfig.json"],
+  "files": [
+    "lib",
+    "package.json",
+    "README.md",
+    "tsconfig.json"
+  ],
   "author": "Elouann Hosta",
   "license": "ISC",
   "devDependencies": {
