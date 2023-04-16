@@ -96,7 +96,7 @@ defaultEventsCb.set('ready', (client: KyaClient): void => {
 defaultEventsCb.set(
   'interactionCreate',
   async (client: KyaClient, interaction: BaseInteraction): Promise<void> => {
-    if (interaction.isCommand()) {
+    if (interaction.isChatInputCommand() || interaction.isContextMenuCommand()) {
       const command: Command | undefined = client.Commands.getCommand(interaction.commandName);
       if (!command) return;
       await command.run(interaction);

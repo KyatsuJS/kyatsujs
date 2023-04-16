@@ -61,10 +61,9 @@ export class CommandManager {
       throw new Error('Invalid command name provided.');
     }
 
-    // @ts-ignore
-    const desc: boolean = data.options?.description;
+    const desc: string = data.options?.description;
     if (!desc) {
-      throw new Error('Invalid command description provided.');
+        data.options.description = 'No description provided.';
     }
 
     return new Command(this.client, data.options.name, data.options, data.metaData, data.additional);

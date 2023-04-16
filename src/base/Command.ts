@@ -1,6 +1,7 @@
 import {
-  ApplicationCommandData,
-  BaseInteraction,
+  ChatInputApplicationCommandData,
+  ChatInputCommandInteraction,
+  ContextMenuCommandInteraction,
 } from 'discord.js';
 
 import { CreateAnonymeArray, NumRange } from "../tools";
@@ -36,7 +37,7 @@ export interface MetaData {
    * The commands that must be executed before this one.
    * If one of the interfering commands are currently running, this command will be ignored.
    */
-  interferingCommands?: ApplicationCommandData['name'][];
+  interferingCommands?: ChatInputApplicationCommandData['name'][];
   /**
    * The amount of time before running the command again. Must be between 0 and 300 seconds.
    */
@@ -77,7 +78,7 @@ export interface CommandOptions {
    * The data concerning the command. See the Discord API documentation for more information.
    * @link https://discord.com/developers/docs/interactions/slash-commands#applicationcommand
    */
-  options: ApplicationCommandData;
+  options: ChatInputApplicationCommandData;
   /**
    * The options associated with Kyatsu services. See the MetaData interface for more information.
    */
@@ -98,7 +99,12 @@ export interface CommandOptions {
  * @param interaction The interaction associated with the command.
  * @returns Void.
  */
-export type commandCallback = (command: Command | unknown, interaction: BaseInteraction) => Promise<void>;
+export type commandCallback = (
+    command: Command,
+    interaction:
+        | ChatInputCommandInteraction
+        | ContextMenuCommandInteraction
+) => Promise<void>;
 
 /**
  * Represents the basic command interaction.
@@ -115,7 +121,7 @@ export class Command {
   /**
    * The options to implement with the command.
    */
-  public readonly options: ApplicationCommandData;
+  public readonly options: ChatInputApplicationCommandData;
   /**
    * The options associated with Kyatsu services (cool down, permissions...).
    */
@@ -147,7 +153,7 @@ export class Command {
   constructor(
     client: KyaClient,
     name: string,
-    options: ApplicationCommandData,
+    options: ChatInputApplicationCommandData,
     metaData?: MetaData,
     additional?: object,
   ) {
@@ -192,7 +198,7 @@ export class Command {
    * @returns Void.
    */
   // @ts-ignore
-  public async run(interaction: BaseInteraction): Promise<void> {
+  public async run(interaction: ChatInputCommandInteraction | ContextMenuCommandInteraction): Promise<void> {
     this.context = new Context(interaction.channel as ContextChannel, this, interaction, interaction.user);
     const activeCoolDowns: coolDownsQueueElement[] = this.client.Commands.CoolDowns.coolDowns(
       interaction.user.id,
@@ -237,6 +243,10 @@ export class Command {
     await this._run(this, interaction);
   }
 
+  /**
+   * End the command. Call it when you want the command to be considered as finished and remove it from the interfering queue.
+   * @returns Void.
+   */
   public end(): void {
     if (!this.ctx) return;
     if (!this.ctx.interaction) return;
