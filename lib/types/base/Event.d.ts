@@ -1,5 +1,5 @@
-import { Collection } from 'discord.js';
-import { KyaClient } from './KyaClient';
+import {Collection} from 'discord.js';
+import {KyaClient} from './KyaClient';
 /**
  * The model of a callback function for an event.
  * @param args The command args.

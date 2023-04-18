@@ -1,6 +1,6 @@
-import { Client, ClientOptions } from 'discord.js';
-import { CommandManager } from './CommandManager';
-import { EventManager } from './EventManager';
+import {Client, ClientOptions} from 'discord.js';
+import {CommandManager} from './CommandManager';
+import {EventManager} from './EventManager';
 /**
  * Represents the default events list.
  */

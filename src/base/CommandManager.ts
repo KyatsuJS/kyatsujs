@@ -1,9 +1,9 @@
-import { ApplicationCommand, Collection, GuildResolvable } from 'discord.js';
+import {ApplicationCommand, Collection, GuildResolvable} from 'discord.js';
 
-import { Command, commandCallback, CommandOptions } from './Command';
-import { CoolDownManager } from './CoolDownManager';
-import { InterferingManager } from './InterferingManager';
-import { KyaClient } from './KyaClient';
+import {Command, commandCallback, CommandOptions} from './Command';
+import {CoolDownManager} from './CoolDownManager';
+import {InterferingManager} from './InterferingManager';
+import {KyaClient} from './KyaClient';
 
 /**
  * Represents the command manager of Kyatsu.
@@ -12,7 +12,7 @@ export class CommandManager {
   /**
    * The client instance.
    */
-  public client: KyaClient;
+  public readonly client: KyaClient;
   /**
    * The cool down manager instance, to have access to the different delays of the current commands.
    */
@@ -30,7 +30,7 @@ export class CommandManager {
    * @param client The KyaClient instance.
    */
   constructor(client: KyaClient) {
-    if (!client) throw new Error('Invalid client provided.');
+    if (!client || !(client instanceof KyaClient)) throw new Error('Invalid client provided.');
 
     this.client = client;
     this.CoolDowns = new CoolDownManager(this.client);
@@ -45,6 +45,9 @@ export class CommandManager {
    */
   public create(data: string | CommandOptions): Command {
     if (!data) throw new Error('Invalid command data provided.');
+    if (typeof data !== 'string' && typeof data !== 'object') {
+      throw new Error('Invalid command data provided. It must be a string or an object.');
+    }
 
     if (typeof data === 'string') {
       data = {
@@ -82,7 +85,10 @@ export class CommandManager {
       return this;
     }
     const command: Command = this.create(data);
-    if (callback) command.setRun = callback;
+    if (callback) {
+      if (typeof callback !== 'function') throw new Error('Invalid callback provided. It must be a function.');
+      command.setRun = callback;
+    }
     this._commands.set(command.options.name, command);
     return this;
   }
@@ -93,9 +99,7 @@ export class CommandManager {
    * @returns The command manager instance (this).
    */
   public remove(name: string): CommandManager {
-    if (!name) {
-      throw new Error('Invalid command name provided.');
-    }
+    if (!name || typeof name !== 'string') throw new Error('Invalid command name provided.');
 
     this._commands.delete(name);
     return this;
@@ -107,7 +111,7 @@ export class CommandManager {
    * @returns Void.
    */
   public load(): void {
-    this.client._load = true;
+    this.client.setLoad = true;
   }
 
   /**
@@ -116,9 +120,7 @@ export class CommandManager {
    * @returns The found command instance, or undefined.
    */
   public getCommand(name: string): Command | undefined {
-    if (!name) {
-      throw new Error('Invalid command name provided.');
-    }
+    if (!name || typeof name !== "string") throw new Error('Invalid command name provided.');
 
     return this.commands.get(name);
   }
@@ -128,7 +130,7 @@ export class CommandManager {
    * @returns The bot API commands list, or undefined.
    */
   public get clientCommands(): Promise<Collection<string, ApplicationCommand<{ guild: GuildResolvable }>>> | undefined {
-    return this.client.application?.commands.fetch();
+    return this.client.resolved.application?.commands.fetch();
   }
 
   /**

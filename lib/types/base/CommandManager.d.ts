@@ -1,8 +1,8 @@
-import { ApplicationCommand, Collection, GuildResolvable } from 'discord.js';
-import { Command, commandCallback, CommandOptions } from './Command';
-import { CoolDownManager } from './CoolDownManager';
-import { InterferingManager } from './InterferingManager';
-import { KyaClient } from './KyaClient';
+import {ApplicationCommand, Collection, GuildResolvable} from 'discord.js';
+import {Command, commandCallback, CommandOptions} from './Command';
+import {CoolDownManager} from './CoolDownManager';
+import {InterferingManager} from './InterferingManager';
+import {KyaClient} from './KyaClient';
 /**
  * Represents the command manager of Kyatsu.
  */

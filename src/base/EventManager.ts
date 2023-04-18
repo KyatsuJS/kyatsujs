@@ -2,8 +2,8 @@ import {
   Collection,
 } from 'discord.js';
 
-import { eventCallback, Event, defaultEventsCb, callbackDefault } from './Event';
-import { KyaClient } from './KyaClient';
+import {eventCallback, Event, defaultEventsCb, callbackDefault} from './Event';
+import {KyaClient} from './KyaClient';
 
 /**
  * Represents the event manager for the Kyatsu service.
@@ -12,7 +12,7 @@ export class EventManager {
   /**
    * The KyaClient instance.
    */
-  public client: KyaClient;
+  public readonly client: KyaClient;
   /**
    * The collection of the events.
    */
@@ -22,7 +22,7 @@ export class EventManager {
    * @param client The KyaClient instance.
    */
   constructor(client: KyaClient) {
-    if (!client) throw new Error('Invalid client provided.');
+    if (!client || !(client instanceof KyaClient)) throw new Error('Invalid client provided.');
 
     this.client = client;
     this._events = new Collection();
@@ -35,13 +35,11 @@ export class EventManager {
    * @returns The bound event instance.
    */
   public bindEvent(name: string, callback?: eventCallback): Event {
-    if (!name) {
-      throw new Error('Invalid event name provided.');
-    }
+    if (!name || typeof name !== 'string') throw new Error('Invalid event name provided.');
 
     const event: Event = new Event(this.client, name);
-    if (callback && typeof callback === 'function') event.callback = callback;
-    else if (!callback) event.callback = defaultEventsCb.get(name) || callbackDefault;
+    if (callback && typeof callback === 'function') event.setCallback = callback;
+    else if (!callback) event.setCallback = defaultEventsCb.get(name) || callbackDefault;
 
     this._events.set(name, event);
     return event;
@@ -53,7 +51,7 @@ export class EventManager {
    * @returns True if the command has been removed, or false if not.
    */
   public unbindEvent(name: string): boolean {
-    if (!name) {
+    if (!name || typeof name !== 'string') {
       throw new Error('Invalid event name provided.');
     }
     return this._events.delete(name);

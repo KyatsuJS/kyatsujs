@@ -1,7 +1,7 @@
-import { ApplicationCommandData, BaseInteraction } from 'discord.js';
-import { CreateAnonymeArray, NumRange } from "../tools";
-import { KyaClient } from './KyaClient';
-import { Context } from "../services";
+import {ApplicationCommandData, BaseInteraction} from 'discord.js';
+import {CreateAnonymeArray, NumRange} from "../tools";
+import {KyaClient} from './KyaClient';
+import {Context} from "../services";
 /**
  * Where the command should be executed.
  */

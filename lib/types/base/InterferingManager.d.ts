@@ -1,5 +1,5 @@
-import { Snowflake } from 'discord.js';
-import { KyaClient } from './KyaClient';
+import {Snowflake} from 'discord.js';
+import {KyaClient} from './KyaClient';
 /**
  * Represents an element in the interfering commands queue. Interfering commands are commands that are currently executing.
  * @property 0 The name of the command.

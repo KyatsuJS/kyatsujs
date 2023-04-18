@@ -1,6 +1,6 @@
-import { Snowflake } from 'discord.js';
-import { KyaClient } from './KyaClient';
-import { CreateAnonymeArray, NumRange } from "../tools";
+import {Snowflake} from 'discord.js';
+import {KyaClient} from './KyaClient';
+import {CreateAnonymeArray, NumRange} from "../tools";
 /**
  * Represents an element in the cool downs queue.
  * @property 0 The name of the command.

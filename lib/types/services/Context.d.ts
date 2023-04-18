@@ -1,7 +1,7 @@
-import { BaseGuildVoiceChannel, BaseGuildTextChannel, TextBasedChannel, VoiceBasedChannel, BaseInteraction, User, MessagePayload, Message } from 'discord.js';
-import { APIEmbedAuthor } from 'discord-api-types/v10';
-import { Command } from "../base";
-import { Colors } from "../tools";
+import {BaseGuildVoiceChannel, BaseGuildTextChannel, TextBasedChannel, VoiceBasedChannel, BaseInteraction, User, MessagePayload, Message} from 'discord.js';
+import {APIEmbedAuthor} from 'discord-api-types/v10';
+import {Command} from "../base";
+import {Colors} from "../tools";
 /**
  * Represents the type for a context possible channel type among Discord package.
  */

@@ -4,9 +4,9 @@ import {
   BaseInteraction,
 } from 'discord.js';
 
-import { Command } from './Command';
-import { KyaClient } from './KyaClient';
-import { log } from "../tools";
+import {Command} from './Command';
+import {KyaClient} from './KyaClient';
+import {log} from "../tools";
 
 /**
  * The model of a callback function for an event.
@@ -30,7 +30,7 @@ export class Event {
   /**
    * The KyaClient instance.
    */
-  public client: KyaClient;
+  public readonly client: KyaClient;
   /**
    * The event name.
    */
@@ -45,10 +45,8 @@ export class Event {
    * @param name The event name.
    */
   constructor(client: KyaClient, name: string) {
-    if (!client) throw new Error('Invalid client provided.');
-    if (!name) {
-      throw new Error('Invalid event name provided.');
-    }
+    if (!client || !(client instanceof KyaClient)) throw new Error('Invalid client provided.');
+    if (!name || typeof name !== 'string') throw new Error('Invalid event name provided.');
 
     this.client = client;
     this.name = name;
@@ -68,7 +66,7 @@ export class Event {
    * Set the call back function for the event. This function is called when the event is triggered.
    * @param callback The function to set.
    */
-  set callback(callback: eventCallback) {
+  set setCallback(callback: eventCallback) {
     if (typeof callback !== 'function') {
       throw new Error('Invalid callback provided.');
     }
@@ -79,7 +77,7 @@ export class Event {
    * Returns the callback defined for the current event instance.
    * @returns The function associated with the command.
    */
-  get callbackFn(): eventCallback {
+  get callback(): eventCallback {
     return this._callback;
   }
 }
@@ -90,7 +88,7 @@ export class Event {
 export const defaultEventsCb: Collection<string, eventCallback> = new Collection();
 
 defaultEventsCb.set('ready', (client: KyaClient): void => {
-  log(`Logged in as ${(client as Client<true>).user.tag}.`);
+  log(`Logged in as ${(client.resolved as Client<true>).user.tag}.`);
 });
 
 defaultEventsCb.set(

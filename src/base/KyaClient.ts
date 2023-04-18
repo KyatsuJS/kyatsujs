@@ -1,9 +1,9 @@
-import { Client, ClientOptions, Collection } from 'discord.js';
+import {Client, ClientOptions, Collection} from 'discord.js';
 
-import { CommandManager } from './CommandManager';
-import { EventManager } from './EventManager';
-import { Event } from './Event';
-import { Command, CommandLocation } from './Command';
+import {CommandManager} from './CommandManager';
+import {EventManager} from './EventManager';
+import {Event} from './Event';
+import {Command, CommandLocation} from './Command';
 import * as Discord from "discord.js";
 
 /**
@@ -28,7 +28,11 @@ export interface KyaOptions extends ClientOptions {
 /**
  * The class that represents an instance of KyaClient. It extends the Discord.<Client> class.
  */
-export class KyaClient extends Client {
+export class KyaClient {
+  /**
+   * The Discord Client instance.
+   */
+  public readonly resolved: Client;
   /**
    * The command manager instance.
    */
@@ -45,27 +49,52 @@ export class KyaClient extends Client {
    * Whether the client should load commands or not. Load commands means sending commands to the API.
    * Don't activate this permanently, it's only on change.
    */
-  public _load: boolean = false;
+  private _load: boolean = false;
 
   /**
    * @param options The ClientOptions of the client (Discord.<ClientOptions>).
    */
   constructor(options: KyaOptions) {
-    super(options);
+    if (!options || typeof options !== 'object') throw new Error('Invalid options provided.');
 
     this.Commands = new CommandManager(this);
     this.Events = new EventManager(this);
     this._token = options.token || undefined;
 
+    this.resolved = new Client(options);
+
     this.Events.bindEvent('ready');
   }
 
   /**
-   * Create a KyaClient instance and returns it; using multiple possibles as arguments.
-   * @param {KyaOptions | string | any} options The options or the token. If the token only is passed, default options are taken.
-   * @returns {KyaClient} The KyaClient instance.
+   * Set the commands loading to the API value (true/false).
+   * @param value The value to set.
    */
-  static init(options: KyaOptions | string | undefined): KyaClient {
+  public set setLoad(value: boolean) {
+    if (typeof value !== 'boolean') throw new Error('Invalid value provided.');
+    this._load = value;
+  }
+
+  /**
+   * Returns if the commands loading to the API is enabled or not.
+   * @returns True if the commands loading is enabled, or false if not.
+   */
+  public get load(): boolean {
+    return this._load;
+  }
+
+  /**
+   * Create a KyaClient instance and returns it; using multiple possibles as arguments.
+   * @param options The options or the token. If the token only is passed, default options are taken.
+   * @returns The KyaClient instance.
+   */
+  static init(options: KyaOptions | string): KyaClient {
+    if (!options
+      || (
+        options && typeof options !== 'object' && typeof options !== 'string'
+      )
+    ) throw new Error('Invalid options provided.');
+
     let defaultOptions: KyaOptions = {
       failIfNotExists: false,
       intents: [Discord.GatewayIntentBits.Guilds],
@@ -87,15 +116,16 @@ export class KyaClient extends Client {
    */
   public async login(token?: string): Promise<string> {
     if (!token && !this._token) throw new Error('No token provided.');
+    if (token && typeof token !== 'string') throw new Error('Invalid token provided.');
 
     this.Events.events.each((event: Event) => {
       const method: string = event.name === 'ready' ? 'once' : 'on';
       (this as { [index: string]: any })[method](event.name, (...args: any[]): void => {
-        event.callbackFn(this, ...args);
+        event.callback(this, ...args);
       });
     });
 
-    await super.login(token || this._token);
+    await this.resolved.login(token || this._token);
     if (this._load) {
       this.loadCommands();
     }
@@ -105,11 +135,10 @@ export class KyaClient extends Client {
 
   /**
    * A private function that load commands.
-   * @private
    * @returns The command manager instance of the client.
    */
   private loadCommands(): CommandManager {
-    const clientApplication: KyaClient['application'] = this.application;
+    const clientApplication: KyaClient['resolved']['application'] = this.resolved.application;
     if (!clientApplication) {
       throw new Error('Invalid client application provided.');
     }
@@ -122,18 +151,18 @@ export class KyaClient extends Client {
         command.metaData.guildOnly === CommandLocation.GUILD_ONLY ||
         command.metaData.guildOnly === CommandLocation.BOTH
       ) {
-        for (const guildId of command.metaData.guilds || []) {
-          if (!guilds.has(guildId)) {
+        for (const guildID of command.metaData.guilds || []) {
+          if (!guilds.has(guildID)) {
             // @ts-ignore
-            guilds.set(guildId, []);
+            guilds.set(guildID, []);
           }
 
           // @ts-ignore
-          const guildCommands: undefined | Command[] = guilds.get(guildId);
+          const guildCommands: undefined | Command[] = guilds.get(guildID);
           if (!guildCommands) continue;
 
           guildCommands.push(command);
-          guilds.set(guildId, guildCommands);
+          guilds.set(guildID, guildCommands);
         }
       } else if (
         command.metaData.guildOnly === CommandLocation.GLOBAL ||
@@ -144,17 +173,17 @@ export class KyaClient extends Client {
     });
 
     for (const guild of guilds) {
-      const guildId: string = guild[0];
+      const guildID: string = guild[0];
       const guildCommands: Command[] = guild[1];
       if (guildCommands.length > 0) {
-        this.application?.commands.set(
+        this.resolved.application?.commands.set(
           guildCommands.map((cmd: Command) => cmd.options),
-          guildId,
+          guildID,
         );
       }
     }
     if (global.length > 0) {
-      this.application?.commands.set(global.map((cmd: Command) => cmd.options));
+      this.resolved.application?.commands.set(global.map((cmd: Command) => cmd.options));
     }
     return this.Commands;
   }

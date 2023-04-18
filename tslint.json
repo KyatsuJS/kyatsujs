@@ -5,6 +5,7 @@
   ],
   "rules": {
     "no-console": false,
-    "max-classes-per-file": [true, 1]
+    "max-classes-per-file": [true, 1],
+    "no-redundant-jsdoc": true
   }
 }

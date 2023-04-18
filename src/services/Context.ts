@@ -10,10 +10,10 @@ import {
   Message,
 } from 'discord.js';
 
-import { APIEmbedAuthor } from 'discord-api-types/v10';
+import {APIEmbedAuthor} from 'discord-api-types/v10';
 
-import { Command } from "../base";
-import { log, Colors } from "../tools";
+import {Command} from "../base";
+import {log, Colors} from "../tools";
 
 /**
  * Represents the type for a context possible channel type among Discord package.
@@ -70,7 +70,7 @@ export class Context {
   /**
    * The interaction, if there is one.
    */
-  public readonly interaction: BaseInteraction | null | undefined;
+  public readonly interaction: BaseInteraction | undefined;
   /**
    * The users implicated in the context/action.
    */
@@ -82,9 +82,15 @@ export class Context {
    * @param interaction The interaction, if there is one.
    * @param users The users implicated in the context/action.
    */
-  constructor(channel: ContextChannel, command: Command, interaction?: null | BaseInteraction, ...users: User[] | []) {
-    if (!channel) throw new Error('No channel passed.');
-    if (!command) throw new Error('No command passed.');
+  constructor(channel: ContextChannel, command: Command, interaction?: BaseInteraction, ...users: User[] | []) {
+    if (!channel) throw new Error('No channel provided.');
+    if (!command || !(command instanceof Command)) throw new Error('No command passed.');
+    if (interaction && !(interaction instanceof BaseInteraction)) {
+      throw new Error('Interaction is not a Discord BaseInteraction instance.');
+    }
+    if (users.length > 0 && users.some((user: User): boolean => !(user instanceof User))) {
+      throw new Error('Users are not Discord User instances list.');
+    }
 
     this.channel = channel;
     this.command = command;
@@ -102,6 +108,9 @@ export class Context {
       throw new Error('Channel is not a Discord BaseChannel instance.');
     }
     if (!this.channel.isTextBased()) return null;
+    if (!messagePayload || !(messagePayload instanceof MessagePayload && typeof messagePayload === "object")) {
+      throw new Error('No message payload passed.');
+    }
 
     const message: void | Message = await this.channel.send(messagePayload).catch((reason: any): void => {
       log(`Message could not be sent: ${reason}`);
@@ -121,11 +130,12 @@ export class Context {
     alertData: AlertData,
     style: keyof typeof Colors = Object.keys(Colors)[0] as keyof typeof Colors,
   ): Promise<Message | null> {
-    if (!alertData) throw new Error('No alert data passed.');
+    if (!alertData || typeof alertData !== "object") throw new Error('Invalid alert data passed.');
     if (!this.interaction) return null;
 
-    if (!alertData.title) throw new Error('No title passed, but necessary.');
+    if (!style || !(style in Colors)) throw new Error('Invalid style for embed alert.');
 
+    if (!alertData.title) throw new Error('No title passed, but necessary.');
     if (!alertData.description) throw new Error('No description passed, but necessary.');
 
     const embed: EmbedBuilder = new EmbedBuilder();

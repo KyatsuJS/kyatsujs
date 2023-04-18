@@ -4,12 +4,12 @@ import {
   ContextMenuCommandInteraction,
 } from 'discord.js';
 
-import { CreateAnonymeArray, NumRange } from "../tools";
-import { log } from "../tools";
-import { KyaClient } from './KyaClient';
-import { Context, ContextChannel } from "../services";
-import { coolDownsQueueElement } from './CoolDownManager';
-import { interferingQueueElement } from './InterferingManager';
+import {CreateAnonymeArray, NumRange} from "../tools";
+import {log} from "../tools";
+import {KyaClient} from './KyaClient';
+import {Context, ContextChannel} from "../services";
+import {coolDownsQueueElement} from './CoolDownManager';
+import {interferingQueueElement} from './InterferingManager';
 
 /**
  * Where the command should be executed.
@@ -43,12 +43,6 @@ export interface MetaData {
    */
   coolDown?: NumRange<CreateAnonymeArray<0>, 300>;
   /**
-   * The permissions required to execute the command. Must be a BigInt.
-   * See the Discord API documentation for more information.
-   * @link https://discord.com/developers/docs/topics/permissions#permissions-bitwise-permission-flags
-   */
-  requiredPermissions?: BigInt;
-  /**
    * Where the command should be executed.
    */
   guildOnly?: CommandLocation;
@@ -65,7 +59,6 @@ export interface MetaData {
 export const defaultMetaData: MetaData = {
   interferingCommands: [],
   coolDown: 0,
-  requiredPermissions: 0n,
   guildOnly: CommandLocation.GLOBAL,
   guilds: [],
 };
@@ -113,7 +106,7 @@ export class Command {
   /**
    * The client instance.
    */
-  public client: KyaClient;
+  public readonly client: KyaClient;
   /**
    * The name of the command.
    */
@@ -133,10 +126,9 @@ export class Command {
   /**
    * The context of the command, to use interactions with Discord.
    */
-  public ctx: Context | undefined;
+  private _ctx: Context | undefined;
   /**
    * The function to call when the command is executed.
-   * @type commandCallback
    */
   private _run: commandCallback = async (): Promise<void> => {
     log('Command interaction ran.');
@@ -157,14 +149,17 @@ export class Command {
     metaData?: MetaData,
     additional?: object,
   ) {
-    if (!client) throw new Error('Invalid client provided.');
-    if (!name) {
+    if (!client || !(client instanceof KyaClient)) throw new Error('Invalid client provided.');
+    if (!name || typeof name !== 'string') {
       throw new Error('Invalid command name provided.');
     }
-    if (!options) throw new Error('Invalid command options provided.');
+    if (!options || typeof options !== "object") throw new Error('Invalid command options provided.');
     if (options?.type !== 1) {
       throw new Error('Invalid command type provided. It must be a slash command. Type 1.');
     }
+
+    if (metaData && typeof metaData !== "object") throw new Error('Invalid command metaData provided.');
+    if (additional && typeof additional !== "object") throw new Error('Invalid command additional provided.');
 
     this.client = client;
     this.name = name;
@@ -177,8 +172,10 @@ export class Command {
    * Set the context of the command.
    * @param ctx The context instance.
    */
-  set context(ctx: Context) {
-    this.ctx = ctx;
+  public set setContext(ctx: Context) {
+    if (!(ctx instanceof Context)) throw new Error('Invalid context provided. It must be a Context instance.');
+
+    this._ctx = ctx;
   }
 
   /**
@@ -193,13 +190,29 @@ export class Command {
   }
 
   /**
+   * Get the context of the command.
+   * @returns The context of the command.
+   */
+  public get ctx(): Context {
+    if (!this._ctx) throw new Error('Context not set.');
+    return this._ctx;
+  }
+
+  /**
    * Execute the command call back function.
    * @param interaction The interaction associated with the command.
    * @returns Void.
    */
   // @ts-ignore
   public async run(interaction: ChatInputCommandInteraction | ContextMenuCommandInteraction): Promise<void> {
-    this.context = new Context(interaction.channel as ContextChannel, this, interaction, interaction.user);
+    if (!(interaction instanceof ChatInputCommandInteraction)
+        && !(interaction instanceof ContextMenuCommandInteraction)) {
+        throw new Error(
+            'Invalid interaction provided: ChatInputCommandInteraction or ContextMenuCommandInteraction expected.'
+        );
+    }
+
+    this.setContext = new Context(interaction.channel as ContextChannel, this, interaction, interaction.user);
     const activeCoolDowns: coolDownsQueueElement[] = this.client.Commands.CoolDowns.coolDowns(
       interaction.user.id,
       this.name,
@@ -211,9 +224,9 @@ export class Command {
 
     if (activeCoolDowns.length > 0) {
       const finishTime: string = String(activeCoolDowns[0][1] / 1000).split('.')[0];
-      if (!this.ctx) return;
+      if (!this._ctx) return;
 
-      return void (await this.ctx.alert(
+      return void (await this._ctx.alert(
         {
           title: 'Oops!',
           description:
@@ -223,9 +236,9 @@ export class Command {
       ));
     }
     if (activeInterfering.length > 0) {
-      if (!this.ctx) return;
+      if (!this._ctx) return;
 
-      return void (await this.ctx.alert(
+      return void (await this._ctx.alert(
         {
           title: 'Oops!',
           description: `You can't run this command while **/${
@@ -248,9 +261,9 @@ export class Command {
    * @returns Void.
    */
   public end(): void {
-    if (!this.ctx) return;
-    if (!this.ctx.interaction) return;
+    if (!this._ctx) return;
+    if (!this._ctx.interaction) return;
 
-    this.client.Commands.Interfering.removeInterfering(this.ctx?.interaction.user.id, this.ctx?.interaction.id);
+    this.client.Commands.Interfering.removeInterfering(this._ctx?.interaction.user.id, this._ctx?.interaction.id);
   }
 }

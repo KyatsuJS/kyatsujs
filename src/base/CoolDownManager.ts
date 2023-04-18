@@ -1,15 +1,25 @@
-import { Collection, Snowflake } from 'discord.js';
+import { Collection, Snowflake, SnowflakeUtil } from "discord.js";
 
-import { KyaClient } from './KyaClient';
-import { CreateAnonymeArray, NumRange } from "../tools";
+import {KyaClient} from './KyaClient';
+import {CreateAnonymeArray, NumRange} from "../tools";
 
 /**
  * Represents an element in the cool downs queue.
- * @property 0 The name of the command.
- * @property 1 The end time of the cool down.
- * @property 2 The cool down amount.
  */
-export type coolDownsQueueElement = [string, number, NumRange<CreateAnonymeArray<0>, 300>];
+export type coolDownsQueueElement = [
+  /**
+   * The name of the command.
+   */
+  string,
+  /**
+   * The end time of the cool down.
+   */
+  number,
+  /**
+   * The cool down amount.
+   */
+  NumRange<CreateAnonymeArray<0>, 300>,
+];
 
 /**
  * The main class that manages the active cool downs for commands.
@@ -18,7 +28,7 @@ export class CoolDownManager {
   /**
    * The KyaClient instance.
    */
-  public client: KyaClient;
+  public readonly client: KyaClient;
   /**
    * The collection of the current cool downs.
    */
@@ -28,7 +38,7 @@ export class CoolDownManager {
    * @param client The KyaClient instance.
    */
   constructor(client: KyaClient) {
-    if (!client) throw new Error('Invalid client provided.');
+    if (!client || !(client instanceof KyaClient)) throw new Error('Invalid client provided.');
 
     this.client = client;
     this._collection = new Collection();
@@ -36,34 +46,41 @@ export class CoolDownManager {
 
   /**
    * Register a cool down when a command is triggered.
-   * @param userId The user ID of the command's author.
+   * @param userID The user ID of the command's author.
    * @param commandName The name of the command.
    * @param coolDown The cool down amount (waiting time before executing it again).
    * @returns Void.
    */
-  public registerCoolDown(userId: Snowflake, commandName: string, coolDown: NumRange<CreateAnonymeArray<0>, 300>): void {
+  public registerCoolDown(userID: Snowflake, commandName: string, coolDown: NumRange<CreateAnonymeArray<0>, 300>): void {
+    if (!userID || !(typeof userID !== "string")) throw new Error('Invalid user ID provided.');
+    if (!commandName || !(typeof commandName !== "string")) throw new Error('Invalid command name provided.');
+    if (!coolDown || !(typeof coolDown !== "number")) throw new Error('Invalid cool down provided.');
+
     const endTime: number = Date.now() + coolDown * 1000;
-    const currentCoolDowns: coolDownsQueueElement[] = this.coolDowns(userId);
+    const currentCoolDowns: coolDownsQueueElement[] = this.coolDowns(userID);
 
     currentCoolDowns.push([commandName, endTime, coolDown]);
 
-    this._collection.set(userId, currentCoolDowns);
+    this._collection.set(userID, currentCoolDowns);
   }
 
   /**
    * Returns all the cool downs for a specified user.
-   * @param userId The user ID to search for.
+   * @param userID The user ID to search for.
    * @param commandName The name of the command to filter by.
    * @returns The full list of the user's cool downs.
    */
-  public coolDowns(userId: Snowflake, commandName?: string): coolDownsQueueElement[] {
-    let currentCoolDowns: coolDownsQueueElement[] | [] = this._collection.get(userId) || [];
+  public coolDowns(userID: Snowflake, commandName?: string): coolDownsQueueElement[] {
+    if (!userID || !(typeof userID !== "string")) throw new Error('Invalid user ID provided.');
+    if (commandName && !(typeof commandName !== "string")) throw new Error('Invalid command name provided.');
+
+    let currentCoolDowns: coolDownsQueueElement[] | [] = this._collection.get(userID) || [];
 
     const currentTime: number = Date.now();
     currentCoolDowns = currentCoolDowns.filter((queueElement: coolDownsQueueElement): boolean => {
       return currentTime < queueElement[1];
     });
-    this._collection.set(userId, currentCoolDowns);
+    this._collection.set(userID, currentCoolDowns);
 
     if (commandName) {
       return currentCoolDowns.filter((queueElement: coolDownsQueueElement): boolean => {
