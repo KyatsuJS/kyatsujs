@@ -7,22 +7,28 @@
   "scripts": {
     "lint": "tslint -p tsconfig.json",
     "prettier": "prettier -w src",
-    "save": "git add src/ && git add lib/ && git add typings/",
+
+    "save": "git add src/ && git add lib/",
     "run-builder": "node builder.js",
-    "build": "npm run run-builder && tsc && npm run save"
+    "build": "npm run run-builder && tsc && npm run prettier && npm run save",
+
+    "saveInfos": "git add -all",
+    "prepublish": "npm run build && git commit -m \"[AUTO] Build\" && npm run saveInfos",
+
+    "publish-patch": "npm version patch && git push && npm publish && git push --tags",
+    "publish-minor": "npm version minor && git push && npm publish && git push --tags",
+    "publish-major": "npm version major && git push && npm publish && git push --tags",
+
+    "test": "npm run build && node index.test.js"
   },
   "keywords": [
     "discord",
     "bot"
   ],
-  "directories": {
-    "lib": "lib"
-  },
   "files": [
     "lib",
     "package.json",
-    "README.md",
-    "tsconfig.json"
+    "README.md"
   ],
   "author": "Elouann Hosta",
   "license": "ISC",

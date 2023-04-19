@@ -5,6 +5,7 @@ node_modules/
 src/
 .prettierrc
 builder.js
+index.test.js
 package-lock.json
 tsconfig.json
 tslint.json
