@@ -4,12 +4,9 @@ import {
   ContextMenuCommandInteraction,
 } from 'discord.js';
 
-import {CreateAnonymeArray, NumRange} from "../tools";
-import {log} from "../tools";
-import {KyaClient} from './KyaClient';
-import {Context, ContextChannel} from "../services";
-import {coolDownsQueueElement} from './CoolDownManager';
-import {interferingQueueElement} from './InterferingManager';
+import { KyaClient, coolDownsQueueElement, interferingQueueElement } from './index';
+import { Context, ContextChannel } from '../services';
+import { CreateAnonymeArray, NumRange, log } from '../tools';
 
 /**
  * Where the command should be executed.
@@ -93,10 +90,8 @@ export interface CommandOptions {
  * @returns Void.
  */
 export type commandCallback = (
-    command: Command,
-    interaction:
-        | ChatInputCommandInteraction
-        | ContextMenuCommandInteraction
+  command: Command,
+  interaction: ChatInputCommandInteraction | ContextMenuCommandInteraction,
 ) => Promise<void>;
 
 /**
@@ -153,13 +148,13 @@ export class Command {
     if (!name || typeof name !== 'string') {
       throw new Error('Invalid command name provided.');
     }
-    if (!options || typeof options !== "object") throw new Error('Invalid command options provided.');
+    if (!options || typeof options !== 'object') throw new Error('Invalid command options provided.');
     if (options?.type !== 1) {
       throw new Error('Invalid command type provided. It must be a slash command. Type 1.');
     }
 
-    if (metaData && typeof metaData !== "object") throw new Error('Invalid command metaData provided.');
-    if (additional && typeof additional !== "object") throw new Error('Invalid command additional provided.');
+    if (metaData && typeof metaData !== 'object') throw new Error('Invalid command metaData provided.');
+    if (additional && typeof additional !== 'object') throw new Error('Invalid command additional provided.');
 
     this.client = client;
     this.name = name;
@@ -205,11 +200,13 @@ export class Command {
    */
   // @ts-ignore
   public async run(interaction: ChatInputCommandInteraction | ContextMenuCommandInteraction): Promise<void> {
-    if (!(interaction instanceof ChatInputCommandInteraction)
-        && !(interaction instanceof ContextMenuCommandInteraction)) {
-        throw new Error(
-            'Invalid interaction provided: ChatInputCommandInteraction or ContextMenuCommandInteraction expected.'
-        );
+    if (
+      !(interaction instanceof ChatInputCommandInteraction) &&
+      !(interaction instanceof ContextMenuCommandInteraction)
+    ) {
+      throw new Error(
+        'Invalid interaction provided: ChatInputCommandInteraction or ContextMenuCommandInteraction expected.',
+      );
     }
 
     this.setContext = new Context(interaction.channel as ContextChannel, this, interaction, interaction.user);

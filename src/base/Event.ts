@@ -1,12 +1,7 @@
-import {
-  Client,
-  Collection,
-  BaseInteraction,
-} from 'discord.js';
+import { Client, Collection, BaseInteraction } from 'discord.js';
 
-import {Command} from './Command';
-import {KyaClient} from './KyaClient';
-import {log} from "../tools";
+import { Command, KyaClient } from './index';
+import { log } from '../tools';
 
 /**
  * The model of a callback function for an event.
@@ -58,8 +53,7 @@ export class Event {
    * @returns Void.
    */
   public async call(): Promise<void> {
-    // @ts-ignore
-    await this._callback(...args);
+    await this._callback(...arguments);
   }
 
   /**
@@ -91,13 +85,10 @@ defaultEventsCb.set('ready', (client: KyaClient): void => {
   log(`Logged in as ${(client.resolved as Client<true>).user.tag}.`);
 });
 
-defaultEventsCb.set(
-  'interactionCreate',
-  async (client: KyaClient, interaction: BaseInteraction): Promise<void> => {
-    if (interaction.isChatInputCommand() || interaction.isContextMenuCommand()) {
-      const command: Command | undefined = client.Commands.getCommand(interaction.commandName);
-      if (!command) return;
-      await command.run(interaction);
-    }
-  },
-);
+defaultEventsCb.set('interactionCreate', async (client: KyaClient, interaction: BaseInteraction): Promise<void> => {
+  if (interaction.isChatInputCommand() || interaction.isContextMenuCommand()) {
+    const command: Command | undefined = client.Commands.getCommand(interaction.commandName);
+    if (!command) return;
+    await command.run(interaction);
+  }
+});

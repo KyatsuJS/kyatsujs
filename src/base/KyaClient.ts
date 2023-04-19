@@ -1,15 +1,24 @@
-import {Client, ClientOptions, Collection} from 'discord.js';
+import { Client, ClientOptions, Collection, GatewayIntentBits } from 'discord.js';
 
-import {CommandManager} from './CommandManager';
-import {EventManager} from './EventManager';
-import {Event} from './Event';
-import {Command, CommandLocation} from './Command';
-import * as Discord from "discord.js";
+import { CommandManager, EventManager, Event, Command, CommandLocation, KyaClientAppearance } from './index';
+import { timeout } from '../tools';
 
 /**
  * Represents the default events list.
  */
 export type availableEvent = 'ready' | 'interactionCreate';
+
+/**
+ * Represents a system function.
+ * @param client The client instance.
+ * @param args The arguments to pass to the function.
+ * @returns The function result.
+ */
+export type systemFunction = (
+  client: KyaClient,
+  bot: typeof KyaClient.prototype.resolved,
+  ...args: any[]
+) => Promise<any | void> | any | void;
 
 /**
  * The KyaClient structure properties.
@@ -50,6 +59,23 @@ export class KyaClient {
    * Don't activate this permanently, it's only on change.
    */
   private _load: boolean = false;
+  /**
+   * The client appearance manager.
+   */
+  public readonly Appearance: KyaClientAppearance = new KyaClientAppearance(this);
+  /**
+   * The function that is called before the client is ready. This is called before the commands are loaded (if enabled).
+   * Also, this is called before the events are bound.
+   */
+  private _prepareMethod: systemFunction = async (): Promise<void> => {
+    return;
+  };
+  /**
+   * The function that is called after the client is ready.
+   */
+  private _readyMethod: systemFunction = async (): Promise<void> => {
+    return;
+  };
 
   /**
    * @param options The ClientOptions of the client (Discord.<ClientOptions>).
@@ -89,15 +115,12 @@ export class KyaClient {
    * @returns The KyaClient instance.
    */
   static init(options: KyaOptions | string): KyaClient {
-    if (!options
-      || (
-        options && typeof options !== 'object' && typeof options !== 'string'
-      )
-    ) throw new Error('Invalid options provided.');
+    if (!options || (options && typeof options !== 'object' && typeof options !== 'string'))
+      throw new Error('Invalid options provided.');
 
     let defaultOptions: KyaOptions = {
       failIfNotExists: false,
-      intents: [Discord.GatewayIntentBits.Guilds],
+      intents: [GatewayIntentBits.Guilds],
       defaultEvents: ['ready'],
     };
     if (typeof options === 'string') {
@@ -118,26 +141,30 @@ export class KyaClient {
     if (!token && !this._token) throw new Error('No token provided.');
     if (token && typeof token !== 'string') throw new Error('Invalid token provided.');
 
+    await this._prepareMethod(this, this.resolved, ...arguments);
+
     this.Events.events.each((event: Event) => {
       const method: string = event.name === 'ready' ? 'once' : 'on';
-      (this as { [index: string]: any })[method](event.name, (...args: any[]): void => {
+      (this.resolved as { [index: string]: any })[method](event.name, (...args: any[]): void => {
         event.callback(this, ...args);
       });
     });
 
-    await this.resolved.login(token || this._token);
+    const logged: string = await this.resolved.login(token || this._token);
     if (this._load) {
-      this.loadCommands();
+      await this.loadCommands();
     }
 
-    return 'Logged in.';
+    await this._readyMethod(this, this.resolved, ...arguments);
+
+    return logged;
   }
 
   /**
    * A private function that load commands.
    * @returns The command manager instance of the client.
    */
-  private loadCommands(): CommandManager {
+  private async loadCommands(): Promise<CommandManager> {
     const clientApplication: KyaClient['resolved']['application'] = this.resolved.application;
     if (!clientApplication) {
       throw new Error('Invalid client application provided.');
@@ -176,15 +203,51 @@ export class KyaClient {
       const guildID: string = guild[0];
       const guildCommands: Command[] = guild[1];
       if (guildCommands.length > 0) {
-        this.resolved.application?.commands.set(
+        void (await this.resolved.application?.commands.set(
           guildCommands.map((cmd: Command) => cmd.options),
           guildID,
-        );
+        ));
       }
     }
     if (global.length > 0) {
-      this.resolved.application?.commands.set(global.map((cmd: Command) => cmd.options));
+      void (await this.resolved.application?.commands.set(global.map((cmd: Command) => cmd.options)));
     }
     return this.Commands;
+  }
+
+  /**
+   * Set the function that is called before the client is ready.
+   * @param method The function to call.
+   * @param timeoutMs The timeout to wait before calling the function in seconds. It will retard the client launching.
+   */
+  public prepare(method: systemFunction, timeoutMs?: number): void {
+    if (typeof method !== 'function') throw new Error('Invalid method provided.');
+
+    if (!(timeout ?? undefined)) {
+      if (typeof timeout !== 'number') throw new Error('Invalid timeout number.');
+
+      this._prepareMethod = async (): Promise<void> => {
+        return await timeout(method, timeoutMs);
+      };
+    }
+    this._prepareMethod = method;
+  }
+
+  /**
+   * Set the function that is called after the client is ready.
+   * @param method The function to call.
+   * @param timeoutMs The timeout to wait before calling the function in seconds.
+   */
+  public run(method: systemFunction, timeoutMs?: number): void {
+    if (typeof method !== 'function') throw new Error('Invalid method provided.');
+
+    if (!(timeout ?? undefined)) {
+      if (typeof timeout !== 'number') throw new Error('Invalid timeout number.');
+
+      this._readyMethod = async (): Promise<void> => {
+        return await timeout(method, timeoutMs);
+      };
+    }
+    this._readyMethod = method;
   }
 }

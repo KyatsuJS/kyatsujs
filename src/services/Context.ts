@@ -10,10 +10,10 @@ import {
   Message,
 } from 'discord.js';
 
-import {APIEmbedAuthor} from 'discord-api-types/v10';
+import { APIEmbedAuthor } from 'discord-api-types/v10';
 
-import {Command} from "../base";
-import {log, Colors} from "../tools";
+import { Command } from '../base';
+import { log, Colors } from '../tools';
 
 /**
  * Represents the type for a context possible channel type among Discord package.
@@ -108,7 +108,7 @@ export class Context {
       throw new Error('Channel is not a Discord BaseChannel instance.');
     }
     if (!this.channel.isTextBased()) return null;
-    if (!messagePayload || !(messagePayload instanceof MessagePayload && typeof messagePayload === "object")) {
+    if (!messagePayload || !(messagePayload instanceof MessagePayload && typeof messagePayload === 'object')) {
       throw new Error('No message payload passed.');
     }
 
@@ -130,7 +130,7 @@ export class Context {
     alertData: AlertData,
     style: keyof typeof Colors = Object.keys(Colors)[0] as keyof typeof Colors,
   ): Promise<Message | null> {
-    if (!alertData || typeof alertData !== "object") throw new Error('Invalid alert data passed.');
+    if (!alertData || typeof alertData !== 'object') throw new Error('Invalid alert data passed.');
     if (!this.interaction) return null;
 
     if (!style || !(style in Colors)) throw new Error('Invalid style for embed alert.');

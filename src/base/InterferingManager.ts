@@ -1,6 +1,6 @@
-import {Collection, Snowflake} from 'discord.js';
+import { Collection, Snowflake } from 'discord.js';
 
-import {KyaClient} from './KyaClient';
+import { KyaClient } from './index';
 
 /**
  * Represents an element in the interfering commands queue.
@@ -95,7 +95,7 @@ export class InterferingManager {
    */
   public removeInterfering(userID: Snowflake, key: string | Snowflake): void {
     if (!userID || typeof userID !== 'string') throw new Error('Invalid user ID provided.');
-    if (!key || (typeof key !== 'string')) throw new Error('Invalid key provided.');
+    if (!key || typeof key !== 'string') throw new Error('Invalid key provided.');
 
     const currentInterfering: interferingQueueElement[] = this.interfering(userID);
     const interferingNames: string[] = currentInterfering.map((queueElement: interferingQueueElement): string => {

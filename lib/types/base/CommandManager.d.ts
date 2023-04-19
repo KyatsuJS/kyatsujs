@@ -1,8 +1,5 @@
-import {ApplicationCommand, Collection, GuildResolvable} from 'discord.js';
-import {Command, commandCallback, CommandOptions} from './Command';
-import {CoolDownManager} from './CoolDownManager';
-import {InterferingManager} from './InterferingManager';
-import {KyaClient} from './KyaClient';
+import { ApplicationCommand, Collection, GuildResolvable } from 'discord.js';
+import { Command, commandCallback, CommandOptions, CoolDownManager, InterferingManager, KyaClient } from './index';
 /**
  * Represents the command manager of Kyatsu.
  */
@@ -10,7 +7,7 @@ export declare class CommandManager {
     /**
      * The client instance.
      */
-    client: KyaClient;
+    readonly client: KyaClient;
     /**
      * The cool down manager instance, to have access to the different delays of the current commands.
      */

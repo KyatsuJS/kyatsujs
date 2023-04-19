@@ -1,13 +1,23 @@
-import {Snowflake} from 'discord.js';
-import {KyaClient} from './KyaClient';
-import {CreateAnonymeArray, NumRange} from "../tools";
+import { Snowflake } from 'discord.js';
+import { KyaClient } from './index';
+import { CreateAnonymeArray, NumRange } from '../tools';
 /**
  * Represents an element in the cool downs queue.
- * @property 0 The name of the command.
- * @property 1 The end time of the cool down.
- * @property 2 The cool down amount.
  */
-export type coolDownsQueueElement = [string, number, NumRange<CreateAnonymeArray<0>, 300>];
+export type coolDownsQueueElement = [
+    /**
+     * The name of the command.
+     */
+    string,
+    /**
+     * The end time of the cool down.
+     */
+    number,
+    /**
+     * The cool down amount.
+     */
+    NumRange<CreateAnonymeArray<0>, 300>
+];
 /**
  * The main class that manages the active cool downs for commands.
  */
@@ -15,7 +25,7 @@ export declare class CoolDownManager {
     /**
      * The KyaClient instance.
      */
-    client: KyaClient;
+    readonly client: KyaClient;
     /**
      * The collection of the current cool downs.
      */
@@ -26,17 +36,17 @@ export declare class CoolDownManager {
     constructor(client: KyaClient);
     /**
      * Register a cool down when a command is triggered.
-     * @param userId The user ID of the command's author.
+     * @param userID The user ID of the command's author.
      * @param commandName The name of the command.
      * @param coolDown The cool down amount (waiting time before executing it again).
      * @returns Void.
      */
-    registerCoolDown(userId: Snowflake, commandName: string, coolDown: NumRange<CreateAnonymeArray<0>, 300>): void;
+    registerCoolDown(userID: Snowflake, commandName: string, coolDown: NumRange<CreateAnonymeArray<0>, 300>): void;
     /**
      * Returns all the cool downs for a specified user.
-     * @param userId The user ID to search for.
+     * @param userID The user ID to search for.
      * @param commandName The name of the command to filter by.
      * @returns The full list of the user's cool downs.
      */
-    coolDowns(userId: Snowflake, commandName?: string): coolDownsQueueElement[];
+    coolDowns(userID: Snowflake, commandName?: string): coolDownsQueueElement[];
 }

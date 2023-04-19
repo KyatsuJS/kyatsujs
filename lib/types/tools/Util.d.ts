@@ -34,10 +34,10 @@ export declare function timeout(fn: (...args: any[]) => any, ms: number): Promis
  * The Colors enum. These are the colors used in the embeds.
  */
 export declare const Colors: {
-    RED: number;
-    ORANGE: number;
-    YELLOW: number;
-    GREEN: number;
-    BLUE: number;
-    WHITE: number;
+    readonly RED: 16730184;
+    readonly ORANGE: 16741670;
+    readonly YELLOW: 16772224;
+    readonly GREEN: 3604333;
+    readonly BLUE: 4541439;
+    readonly WHITE: 15461355;
 };

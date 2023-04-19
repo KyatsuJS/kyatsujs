@@ -1,5 +1,5 @@
-import {Collection} from 'discord.js';
-import {KyaClient} from './KyaClient';
+import { Collection } from 'discord.js';
+import { KyaClient } from './index';
 /**
  * The model of a callback function for an event.
  * @param args The command args.
@@ -18,7 +18,7 @@ export declare class Event {
     /**
      * The KyaClient instance.
      */
-    client: KyaClient;
+    readonly client: KyaClient;
     /**
      * The event name.
      */
@@ -41,12 +41,12 @@ export declare class Event {
      * Set the call back function for the event. This function is called when the event is triggered.
      * @param callback The function to set.
      */
-    set callback(callback: eventCallback);
+    set setCallback(callback: eventCallback);
     /**
      * Returns the callback defined for the current event instance.
      * @returns The function associated with the command.
      */
-    get callbackFn(): eventCallback;
+    get callback(): eventCallback;
 }
 /**
  * The collection that includes the default callback functions for basic events.

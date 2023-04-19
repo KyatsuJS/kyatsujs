@@ -1,3 +1,5 @@
+import { PresenceStatusData } from 'discord.js';
+
 /**
  * Declares a random array.
  */

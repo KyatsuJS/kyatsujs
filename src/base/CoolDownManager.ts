@@ -1,7 +1,7 @@
-import { Collection, Snowflake, SnowflakeUtil } from "discord.js";
+import { Collection, Snowflake, SnowflakeUtil } from 'discord.js';
 
-import {KyaClient} from './KyaClient';
-import {CreateAnonymeArray, NumRange} from "../tools";
+import { KyaClient } from './index';
+import { CreateAnonymeArray, NumRange } from '../tools';
 
 /**
  * Represents an element in the cool downs queue.
@@ -51,10 +51,14 @@ export class CoolDownManager {
    * @param coolDown The cool down amount (waiting time before executing it again).
    * @returns Void.
    */
-  public registerCoolDown(userID: Snowflake, commandName: string, coolDown: NumRange<CreateAnonymeArray<0>, 300>): void {
-    if (!userID || !(typeof userID !== "string")) throw new Error('Invalid user ID provided.');
-    if (!commandName || !(typeof commandName !== "string")) throw new Error('Invalid command name provided.');
-    if (!coolDown || !(typeof coolDown !== "number")) throw new Error('Invalid cool down provided.');
+  public registerCoolDown(
+    userID: Snowflake,
+    commandName: string,
+    coolDown: NumRange<CreateAnonymeArray<0>, 300>,
+  ): void {
+    if (!userID || typeof userID !== 'string') throw new Error('Invalid user ID provided.');
+    if (!commandName || typeof commandName !== 'string') throw new Error('Invalid command name provided.');
+    if ((coolDown ?? undefined) || typeof coolDown !== 'number') throw new Error('Invalid cool down provided.');
 
     const endTime: number = Date.now() + coolDown * 1000;
     const currentCoolDowns: coolDownsQueueElement[] = this.coolDowns(userID);
@@ -71,8 +75,8 @@ export class CoolDownManager {
    * @returns The full list of the user's cool downs.
    */
   public coolDowns(userID: Snowflake, commandName?: string): coolDownsQueueElement[] {
-    if (!userID || !(typeof userID !== "string")) throw new Error('Invalid user ID provided.');
-    if (commandName && !(typeof commandName !== "string")) throw new Error('Invalid command name provided.');
+    if (!userID || typeof userID !== 'string') throw new Error('Invalid user ID provided.');
+    if (commandName && typeof commandName !== 'string') throw new Error('Invalid command name provided.');
 
     let currentCoolDowns: coolDownsQueueElement[] | [] = this._collection.get(userID) || [];
 

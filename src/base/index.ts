@@ -5,3 +5,4 @@ export * from './Event';
 export * from './EventManager';
 export * from './InterferingManager';
 export * from './KyaClient';
+export * from './KyaClientAppearance';

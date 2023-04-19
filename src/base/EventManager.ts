@@ -1,9 +1,6 @@
-import {
-  Collection,
-} from 'discord.js';
+import { Collection } from 'discord.js';
 
-import {eventCallback, Event, defaultEventsCb, callbackDefault} from './Event';
-import {KyaClient} from './KyaClient';
+import { KyaClient, eventCallback, Event, defaultEventsCb, callbackDefault } from './index';
 
 /**
  * Represents the event manager for the Kyatsu service.

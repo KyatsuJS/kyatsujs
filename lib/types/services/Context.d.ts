@@ -1,7 +1,7 @@
-import {BaseGuildVoiceChannel, BaseGuildTextChannel, TextBasedChannel, VoiceBasedChannel, BaseInteraction, User, MessagePayload, Message} from 'discord.js';
-import {APIEmbedAuthor} from 'discord-api-types/v10';
-import {Command} from "../base";
-import {Colors} from "../tools";
+import { BaseGuildVoiceChannel, BaseGuildTextChannel, TextBasedChannel, VoiceBasedChannel, BaseInteraction, User, MessagePayload, Message } from 'discord.js';
+import { APIEmbedAuthor } from 'discord-api-types/v10';
+import { Command } from '../base';
+import { Colors } from '../tools';
 /**
  * Represents the type for a context possible channel type among Discord package.
  */
@@ -55,7 +55,7 @@ export declare class Context {
     /**
      * The interaction, if there is one.
      */
-    readonly interaction: BaseInteraction | null | undefined;
+    readonly interaction: BaseInteraction | undefined;
     /**
      * The users implicated in the context/action.
      */
@@ -66,7 +66,7 @@ export declare class Context {
      * @param interaction The interaction, if there is one.
      * @param users The users implicated in the context/action.
      */
-    constructor(channel: ContextChannel, command: Command, interaction?: null | BaseInteraction, ...users: User[] | []);
+    constructor(channel: ContextChannel, command: Command, interaction?: BaseInteraction, ...users: User[] | []);
     /**
      * Send a message in a text based channel (text, thread, announcements...).
      * @param messagePayload The message data to send (Discord.<MessagePayload>).

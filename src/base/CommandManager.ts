@@ -1,9 +1,6 @@
-import {ApplicationCommand, Collection, GuildResolvable} from 'discord.js';
+import { ApplicationCommand, Collection, GuildResolvable } from 'discord.js';
 
-import {Command, commandCallback, CommandOptions} from './Command';
-import {CoolDownManager} from './CoolDownManager';
-import {InterferingManager} from './InterferingManager';
-import {KyaClient} from './KyaClient';
+import { Command, commandCallback, CommandOptions, CoolDownManager, InterferingManager, KyaClient } from './index';
 
 /**
  * Represents the command manager of Kyatsu.
@@ -66,7 +63,7 @@ export class CommandManager {
 
     const desc: string = data.options?.description;
     if (!desc) {
-        data.options.description = 'No description provided.';
+      data.options.description = 'No description provided.';
     }
 
     return new Command(this.client, data.options.name, data.options, data.metaData, data.additional);
@@ -120,7 +117,7 @@ export class CommandManager {
    * @returns The found command instance, or undefined.
    */
   public getCommand(name: string): Command | undefined {
-    if (!name || typeof name !== "string") throw new Error('Invalid command name provided.');
+    if (!name || typeof name !== 'string') throw new Error('Invalid command name provided.');
 
     return this.commands.get(name);
   }

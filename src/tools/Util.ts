@@ -43,8 +43,7 @@ export function split(): void {
  */
 export async function timeout(fn: (...args: any[]) => any, ms: number): Promise<any> {
   await new Promise((resolve) => setTimeout(resolve, ms));
-  // @ts-ignore
-  return fn(...args);
+  return fn(...arguments);
 }
 
 /**
@@ -57,4 +56,4 @@ export const Colors = {
   GREEN: 0x36ff6d,
   BLUE: 0x454bff,
   WHITE: 0xebebeb,
-};
+} as const;
