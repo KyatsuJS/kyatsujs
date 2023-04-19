@@ -12,8 +12,7 @@
     "run-builder": "node builder.js",
     "build": "npm run run-builder && tsc && npm run prettier && npm run save",
 
-    "saveInfos": "git add -all",
-    "prepublish": "npm run build && git commit -m \"[AUTO] Build\" && npm run saveInfos",
+    "prepublish": "npm run build && git commit -m \"[AUTO] Build\"",
 
     "publish-patch": "npm version patch && git push && npm publish && git push --tags",
     "publish-minor": "npm version minor && git push && npm publish && git push --tags",
