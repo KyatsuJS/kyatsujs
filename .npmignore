@@ -1,10 +1,12 @@
 # .npmignore
+docs/
 .git/
 .idea/
 node_modules/
 src/
 .prettierrc
 builder.js
+doc-builder.js
 index.test.js
 package-lock.json
 tsconfig.json
