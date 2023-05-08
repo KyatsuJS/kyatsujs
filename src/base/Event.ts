@@ -7,7 +7,7 @@ import { log } from '../tools';
  * The model of a callback function for an event.
  * @param args The command args.
  */
-export type eventCallback = (...args: any[]) => void;
+export type EventCallback = (...args: any[]) => void;
 
 /**
  * A default callback function used when nothing is set.
@@ -33,7 +33,7 @@ export class Event {
   /**
    * The callback function.
    */
-  private _callback: eventCallback;
+  private _callback: EventCallback;
 
   /**
    * @param client The KyaClient instance.
@@ -60,7 +60,7 @@ export class Event {
    * Set the call back function for the event. This function is called when the event is triggered.
    * @param callback The function to set.
    */
-  set setCallback(callback: eventCallback) {
+  set setCallback(callback: EventCallback) {
     if (typeof callback !== 'function') {
       throw new Error('Invalid callback provided.');
     }
@@ -71,7 +71,7 @@ export class Event {
    * Returns the callback defined for the current event instance.
    * @returns The function associated with the command.
    */
-  get callback(): eventCallback {
+  get callback(): EventCallback {
     return this._callback;
   }
 }
@@ -79,7 +79,7 @@ export class Event {
 /**
  * The collection that includes the default callback functions for basic events.
  */
-export const defaultEventsCb: Collection<string, eventCallback> = new Collection();
+export const defaultEventsCb: Collection<string, EventCallback> = new Collection();
 
 defaultEventsCb.set('ready', (client: KyaClient): void => {
   log(`Logged in as ${(client.resolved as Client<true>).user.tag}.`);

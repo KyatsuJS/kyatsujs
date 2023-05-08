@@ -4,7 +4,7 @@ import { CreateAnonymeArray, NumRange } from '../tools';
 /**
  * Represents an element in the cool downs queue.
  */
-export type coolDownsQueueElement = [
+export type CoolDownsQueueElement = [
     /**
      * The name of the command.
      */
@@ -48,5 +48,5 @@ export declare class CoolDownManager {
      * @param commandName The name of the command to filter by.
      * @returns The full list of the user's cool downs.
      */
-    coolDowns(userID: Snowflake, commandName?: string): coolDownsQueueElement[];
+    coolDowns(userID: Snowflake, commandName?: string): CoolDownsQueueElement[];
 }

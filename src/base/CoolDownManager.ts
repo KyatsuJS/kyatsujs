@@ -6,7 +6,7 @@ import { CreateAnonymeArray, NumRange } from '../tools';
 /**
  * Represents an element in the cool downs queue.
  */
-export type coolDownsQueueElement = [
+export type CoolDownsQueueElement = [
   /**
    * The name of the command.
    */
@@ -32,7 +32,7 @@ export class CoolDownManager {
   /**
    * The collection of the current cool downs.
    */
-  private readonly _collection: Collection<Snowflake, coolDownsQueueElement[]>;
+  private readonly _collection: Collection<Snowflake, CoolDownsQueueElement[]>;
 
   /**
    * @param client The KyaClient instance.
@@ -61,7 +61,7 @@ export class CoolDownManager {
     if ((coolDown ?? undefined) || typeof coolDown !== 'number') throw new Error('Invalid cool down provided.');
 
     const endTime: number = Date.now() + coolDown * 1000;
-    const currentCoolDowns: coolDownsQueueElement[] = this.coolDowns(userID);
+    const currentCoolDowns: CoolDownsQueueElement[] = this.coolDowns(userID);
 
     currentCoolDowns.push([commandName, endTime, coolDown]);
 
@@ -74,20 +74,20 @@ export class CoolDownManager {
    * @param commandName The name of the command to filter by.
    * @returns The full list of the user's cool downs.
    */
-  public coolDowns(userID: Snowflake, commandName?: string): coolDownsQueueElement[] {
+  public coolDowns(userID: Snowflake, commandName?: string): CoolDownsQueueElement[] {
     if (!userID || typeof userID !== 'string') throw new Error('Invalid user ID provided.');
     if (commandName && typeof commandName !== 'string') throw new Error('Invalid command name provided.');
 
-    let currentCoolDowns: coolDownsQueueElement[] | [] = this._collection.get(userID) || [];
+    let currentCoolDowns: CoolDownsQueueElement[] | [] = this._collection.get(userID) || [];
 
     const currentTime: number = Date.now();
-    currentCoolDowns = currentCoolDowns.filter((queueElement: coolDownsQueueElement): boolean => {
+    currentCoolDowns = currentCoolDowns.filter((queueElement: CoolDownsQueueElement): boolean => {
       return currentTime < queueElement[1];
     });
     this._collection.set(userID, currentCoolDowns);
 
     if (commandName) {
-      return currentCoolDowns.filter((queueElement: coolDownsQueueElement): boolean => {
+      return currentCoolDowns.filter((queueElement: CoolDownsQueueElement): boolean => {
         return queueElement[0] === commandName;
       });
     }

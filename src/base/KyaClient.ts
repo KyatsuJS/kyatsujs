@@ -6,7 +6,7 @@ import { timeout } from '../tools';
 /**
  * Represents the default events list.
  */
-export type availableEvent = 'ready' | 'interactionCreate';
+export type AvailableEvent = 'ready' | 'interactionCreate';
 
 /**
  * Represents a system function.
@@ -14,7 +14,7 @@ export type availableEvent = 'ready' | 'interactionCreate';
  * @param args The arguments to pass to the function.
  * @returns The function result.
  */
-export type systemFunction = (
+export type SystemFunction = (
   client: KyaClient,
   bot: typeof KyaClient.prototype.resolved,
   ...args: any[]
@@ -29,9 +29,9 @@ export interface KyaOptions extends ClientOptions {
    */
   token?: string | undefined;
   /**
-   * The default events to bind among the available ones. See the availableEvent type.
+   * The default events to bind among the available ones. See the AvailableEvent type.
    */
-  defaultEvents?: availableEvent[];
+  defaultEvents?: AvailableEvent[];
 }
 
 /**
@@ -67,13 +67,13 @@ export class KyaClient {
    * The function that is called before the client is ready. This is called before the commands are loaded (if enabled).
    * Also, this is called before the events are bound.
    */
-  private _prepareMethod: systemFunction = async (): Promise<void> => {
+  private _prepareMethod: SystemFunction = async (): Promise<void> => {
     return;
   };
   /**
    * The function that is called after the client is ready.
    */
-  private _readyMethod: systemFunction = async (): Promise<void> => {
+  private _readyMethod: SystemFunction = async (): Promise<void> => {
     return;
   };
 
@@ -120,7 +120,7 @@ export class KyaClient {
 
     let defaultOptions: KyaOptions = {
       failIfNotExists: false,
-      intents: [GatewayIntentBits.Guilds],
+      intents: 3276799,
       defaultEvents: ['ready'],
     };
     if (typeof options === 'string') {
@@ -155,6 +155,9 @@ export class KyaClient {
       await this.loadCommands();
     }
 
+    while (!this.resolved.readyAt) {
+      await timeout((): null => null, 250);
+    }
     await this._readyMethod(this, this.resolved, ...arguments);
 
     return logged;
@@ -220,7 +223,7 @@ export class KyaClient {
    * @param method The function to call.
    * @param timeoutMs The timeout to wait before calling the function in seconds. It will retard the client launching.
    */
-  public prepare(method: systemFunction, timeoutMs?: number): void {
+  public prepare(method: SystemFunction, timeoutMs?: number): void {
     if (typeof method !== 'function') throw new Error('Invalid method provided.');
 
     if (!(timeout ?? undefined)) {
@@ -238,7 +241,7 @@ export class KyaClient {
    * @param method The function to call.
    * @param timeoutMs The timeout to wait before calling the function in seconds.
    */
-  public run(method: systemFunction, timeoutMs?: number): void {
+  public run(method: SystemFunction, timeoutMs?: number): void {
     if (typeof method !== 'function') throw new Error('Invalid method provided.');
 
     if (!(timeout ?? undefined)) {

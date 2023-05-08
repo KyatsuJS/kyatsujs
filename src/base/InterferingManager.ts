@@ -6,7 +6,7 @@ import { KyaClient } from './index';
  * Represents an element in the interfering commands queue.
  * Interfering commands are commands that are currently executing.
  */
-export type interferingQueueElement = [
+export type InterferingQueueElement = [
   /**
    * The name of the command.
    */
@@ -32,7 +32,7 @@ export class InterferingManager {
   /**
    * The collection of the current cool downs.
    */
-  private readonly _collection: Collection<Snowflake, interferingQueueElement[]>;
+  private readonly _collection: Collection<Snowflake, InterferingQueueElement[]>;
 
   /**
    * @param client The KyaClient instance.
@@ -57,7 +57,7 @@ export class InterferingManager {
     if (!interactionID || typeof interactionID !== 'string') throw new Error('Invalid interaction ID provided.');
 
     const startTime: number = Date.now();
-    const currentCoolDowns: interferingQueueElement[] = this.interfering(userID);
+    const currentCoolDowns: InterferingQueueElement[] = this.interfering(userID);
 
     currentCoolDowns.push([commandName, startTime, interactionID]);
 
@@ -70,16 +70,16 @@ export class InterferingManager {
    * @param commands The names of the commands to filter by.
    * @returns The full list of the user's cool downs.
    */
-  public interfering(userID: Snowflake, ...commands: string[]): interferingQueueElement[] {
+  public interfering(userID: Snowflake, ...commands: string[]): InterferingQueueElement[] {
     if (!userID || typeof userID !== 'string') throw new Error('Invalid user ID provided.');
     if (commands.length > 0 && commands.some((command: string): boolean => typeof command !== 'string')) {
       throw new Error('Invalid commands names provided (list of strings).');
     }
 
-    const currentInterfering: interferingQueueElement[] | [] = this._collection.get(userID) || [];
+    const currentInterfering: InterferingQueueElement[] | [] = this._collection.get(userID) || [];
 
     if (commands.length > 0) {
-      return currentInterfering.filter((queueElement: interferingQueueElement): boolean => {
+      return currentInterfering.filter((queueElement: InterferingQueueElement): boolean => {
         return commands.includes(queueElement[0]);
       });
     }
@@ -97,25 +97,25 @@ export class InterferingManager {
     if (!userID || typeof userID !== 'string') throw new Error('Invalid user ID provided.');
     if (!key || typeof key !== 'string') throw new Error('Invalid key provided.');
 
-    const currentInterfering: interferingQueueElement[] = this.interfering(userID);
-    const interferingNames: string[] = currentInterfering.map((queueElement: interferingQueueElement): string => {
+    const currentInterfering: InterferingQueueElement[] = this.interfering(userID);
+    const interferingNames: string[] = currentInterfering.map((queueElement: InterferingQueueElement): string => {
       return queueElement[0];
     });
-    const interferingIDs: Snowflake[] = currentInterfering.map((queueElement: interferingQueueElement): Snowflake => {
+    const interferingIDs: Snowflake[] = currentInterfering.map((queueElement: InterferingQueueElement): Snowflake => {
       return queueElement[2];
     });
 
     if (interferingNames.includes(key as string)) {
       this._collection.set(
         userID,
-        currentInterfering.filter((queueElement: interferingQueueElement): boolean => {
+        currentInterfering.filter((queueElement: InterferingQueueElement): boolean => {
           return queueElement[0] !== key;
         }),
       );
     } else {
       this._collection.set(
         userID,
-        currentInterfering.filter((queueElement: interferingQueueElement): boolean => {
+        currentInterfering.filter((queueElement: InterferingQueueElement): boolean => {
           return queueElement[2] !== key;
         }),
       );

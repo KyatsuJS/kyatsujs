@@ -1,6 +1,6 @@
 import { Collection } from 'discord.js';
 
-import { KyaClient, eventCallback, Event, defaultEventsCb, callbackDefault } from './index';
+import { KyaClient, EventCallback, Event, defaultEventsCb, callbackDefault } from './index';
 
 /**
  * Represents the event manager for the Kyatsu service.
@@ -31,7 +31,7 @@ export class EventManager {
    * @param callback The function to be called back when the event is triggered.
    * @returns The bound event instance.
    */
-  public bindEvent(name: string, callback?: eventCallback): Event {
+  public bindEvent(name: string, callback?: EventCallback): Event {
     if (!name || typeof name !== 'string') throw new Error('Invalid event name provided.');
 
     const event: Event = new Event(this.client, name);

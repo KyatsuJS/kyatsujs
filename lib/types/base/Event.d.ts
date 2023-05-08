@@ -4,7 +4,7 @@ import { KyaClient } from './index';
  * The model of a callback function for an event.
  * @param args The command args.
  */
-export type eventCallback = (...args: any[]) => void;
+export type EventCallback = (...args: any[]) => void;
 /**
  * A default callback function used when nothing is set.
  * @param args The command args.
@@ -41,14 +41,14 @@ export declare class Event {
      * Set the call back function for the event. This function is called when the event is triggered.
      * @param callback The function to set.
      */
-    set setCallback(callback: eventCallback);
+    set setCallback(callback: EventCallback);
     /**
      * Returns the callback defined for the current event instance.
      * @returns The function associated with the command.
      */
-    get callback(): eventCallback;
+    get callback(): EventCallback;
 }
 /**
  * The collection that includes the default callback functions for basic events.
  */
-export declare const defaultEventsCb: Collection<string, eventCallback>;
+export declare const defaultEventsCb: Collection<string, EventCallback>;

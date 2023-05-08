@@ -2,9 +2,10 @@ import {
   ChatInputApplicationCommandData,
   ChatInputCommandInteraction,
   ContextMenuCommandInteraction,
+  GuildMemberRoleManager,
 } from 'discord.js';
 
-import { KyaClient, coolDownsQueueElement, interferingQueueElement } from './index';
+import { KyaClient, CoolDownsQueueElement, InterferingQueueElement } from './index';
 import { Context, ContextChannel } from '../services';
 import { CreateAnonymeArray, NumRange, log } from '../tools';
 
@@ -48,6 +49,18 @@ export interface MetaData {
    * List the guilds where the command should be executed.
    */
   guilds?: string[];
+  /**
+   * If the command is forbidden in some specific channels (use it for private bots).
+   */
+  forbiddenChannels?: string[];
+  /**
+   * If the command is forbidden for some specific users.
+   */
+  forbiddenUsers?: string[];
+  /**
+   * If the command is forbidden for some specific roles (use it for private bots).
+   */
+  forbiddenRoles?: string[];
 }
 
 /**
@@ -58,6 +71,9 @@ export const defaultMetaData: MetaData = {
   coolDown: 0,
   guildOnly: CommandLocation.GLOBAL,
   guilds: [],
+  forbiddenChannels: [],
+  forbiddenUsers: [],
+  forbiddenRoles: [],
 };
 
 /**
@@ -89,7 +105,7 @@ export interface CommandOptions {
  * @param interaction The interaction associated with the command.
  * @returns Void.
  */
-export type commandCallback = (
+export type CommandCallback = (
   command: Command,
   interaction: ChatInputCommandInteraction | ContextMenuCommandInteraction,
 ) => Promise<void>;
@@ -125,7 +141,7 @@ export class Command {
   /**
    * The function to call when the command is executed.
    */
-  private _run: commandCallback = async (): Promise<void> => {
+  private _run: CommandCallback = async (): Promise<void> => {
     log('Command interaction ran.');
     return;
   };
@@ -177,7 +193,7 @@ export class Command {
    * Set the function to be call back when the command is executed.
    * @param callback The function to call.
    */
-  public set setRun(callback: commandCallback) {
+  public set setRun(callback: CommandCallback) {
     if (typeof callback !== 'function') {
       throw new Error('Invalid callback provided. It must be a function.');
     }
@@ -210,11 +226,11 @@ export class Command {
     }
 
     this.setContext = new Context(interaction.channel as ContextChannel, this, interaction, interaction.user);
-    const activeCoolDowns: coolDownsQueueElement[] = this.client.Commands.CoolDowns.coolDowns(
+    const activeCoolDowns: CoolDownsQueueElement[] = this.client.Commands.CoolDowns.coolDowns(
       interaction.user.id,
       this.name,
     );
-    const activeInterfering: interferingQueueElement[] = this.client.Commands.Interfering.interfering(
+    const activeInterfering: InterferingQueueElement[] = this.client.Commands.Interfering.interfering(
       interaction.user.id,
       ...(this.metaData.interferingCommands || []),
     );
@@ -240,12 +256,56 @@ export class Command {
           title: 'Oops!',
           description: `You can't run this command while **/${
             activeInterfering.length > 1
-              ? activeInterfering.map((i: interferingQueueElement) => i[0]).join('**, **/')
+              ? activeInterfering.map((i: InterferingQueueElement) => i[0]).join('**, **/')
               : activeInterfering[0][0]
           }** is running.`,
         },
         'RED',
       ));
+    }
+
+    if (this.metaData.forbiddenChannels && interaction.inGuild() && interaction.channel.id) {
+      if (!this._ctx) return;
+
+      if (this.metaData.forbiddenChannels.includes(interaction.channel.id)) {
+        return void (await this._ctx.alert(
+          {
+            title: 'Oops!',
+            description: `You can't run this command in this channel.`,
+          },
+          'RED',
+        ));
+      }
+    }
+
+    if (this.metaData.forbiddenUsers && this.metaData.forbiddenUsers.includes(interaction.user.id)) {
+      if (!this._ctx) return;
+
+      return void (await this._ctx.alert(
+        {
+          title: 'Oops!',
+          description: `You are not allowed to run this command.`,
+        },
+        'RED',
+      ));
+    }
+
+    if (this.metaData.forbiddenRoles && interaction.inGuild() && interaction.member) {
+      if (
+        this.metaData.forbiddenRoles.some((role: string) =>
+          (interaction.member?.roles as GuildMemberRoleManager).cache.has(role),
+        )
+      ) {
+        if (!this._ctx) return;
+
+        return void (await this._ctx.alert(
+          {
+            title: 'Oops!',
+            description: `You are not allowed to run this command (forbidden roles).`,
+          },
+          'RED',
+        ));
+      }
     }
 
     this.client.Commands.CoolDowns.registerCoolDown(interaction.user.id, this.name, this.metaData.coolDown || 0);

@@ -1,6 +1,6 @@
 import { ApplicationCommand, Collection, GuildResolvable } from 'discord.js';
 
-import { Command, commandCallback, CommandOptions, CoolDownManager, InterferingManager, KyaClient } from './index';
+import { Command, CommandCallback, CommandOptions, CoolDownManager, InterferingManager, KyaClient } from './index';
 
 /**
  * Represents the command manager of Kyatsu.
@@ -76,7 +76,7 @@ export class CommandManager {
    * @param callback? The callback function if the data passed are not a command instance. If nothing passed, use default.
    * @returns The command manager instance (this).
    */
-  public add(data: string | CommandOptions | Command, callback?: commandCallback): CommandManager {
+  public add(data: string | CommandOptions | Command, callback?: CommandCallback): CommandManager {
     if (data instanceof Command) {
       this._commands.set(data.options.name, data);
       return this;

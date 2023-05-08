@@ -1,5 +1,5 @@
 import { Collection } from 'discord.js';
-import { KyaClient, eventCallback, Event } from './index';
+import { KyaClient, EventCallback, Event } from './index';
 /**
  * Represents the event manager for the Kyatsu service.
  */
@@ -22,7 +22,7 @@ export declare class EventManager {
      * @param callback The function to be called back when the event is triggered.
      * @returns The bound event instance.
      */
-    bindEvent(name: string, callback?: eventCallback): Event;
+    bindEvent(name: string, callback?: EventCallback): Event;
     /**
      * Unbind a specific event. Doesn't have any effect when the bot is launched.
      * @param name The event name.

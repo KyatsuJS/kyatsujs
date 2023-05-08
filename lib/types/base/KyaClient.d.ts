@@ -3,14 +3,14 @@ import { CommandManager, EventManager, KyaClientAppearance } from './index';
 /**
  * Represents the default events list.
  */
-export type availableEvent = 'ready' | 'interactionCreate';
+export type AvailableEvent = 'ready' | 'interactionCreate';
 /**
  * Represents a system function.
  * @param client The client instance.
  * @param args The arguments to pass to the function.
  * @returns The function result.
  */
-export type systemFunction = (client: KyaClient, bot: typeof KyaClient.prototype.resolved, ...args: any[]) => Promise<any | void> | any | void;
+export type SystemFunction = (client: KyaClient, bot: typeof KyaClient.prototype.resolved, ...args: any[]) => Promise<any | void> | any | void;
 /**
  * The KyaClient structure properties.
  */
@@ -20,9 +20,9 @@ export interface KyaOptions extends ClientOptions {
      */
     token?: string | undefined;
     /**
-     * The default events to bind among the available ones. See the availableEvent type.
+     * The default events to bind among the available ones. See the AvailableEvent type.
      */
-    defaultEvents?: availableEvent[];
+    defaultEvents?: AvailableEvent[];
 }
 /**
  * The class that represents an instance of KyaClient. It extends the Discord.<Client> class.
@@ -99,11 +99,11 @@ export declare class KyaClient {
      * @param method The function to call.
      * @param timeoutMs The timeout to wait before calling the function in seconds. It will retard the client launching.
      */
-    prepare(method: systemFunction, timeoutMs?: number): void;
+    prepare(method: SystemFunction, timeoutMs?: number): void;
     /**
      * Set the function that is called after the client is ready.
      * @param method The function to call.
      * @param timeoutMs The timeout to wait before calling the function in seconds.
      */
-    run(method: systemFunction, timeoutMs?: number): void;
+    run(method: SystemFunction, timeoutMs?: number): void;
 }

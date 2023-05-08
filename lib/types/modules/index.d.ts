@@ -1,1 +1,1 @@
-export * from './moderation/GuildLogsManager';
+export * from './Voice';

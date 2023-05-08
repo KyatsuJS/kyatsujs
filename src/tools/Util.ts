@@ -1,3 +1,5 @@
+import { Client, Guild, GuildMember, Snowflake } from 'discord.js';
+
 /**
  * Logs a message to the console.
  * @param args The message to log.
@@ -44,6 +46,24 @@ export function split(): void {
 export async function timeout(fn: (...args: any[]) => any, ms: number): Promise<any> {
   await new Promise((resolve) => setTimeout(resolve, ms));
   return fn(...arguments);
+}
+
+/**
+ * A function that get the GuildMember instance with the given ID.
+ * @param client The client instance.
+ * @param guildID The guild ID.
+ * @param memberID The member ID or username.
+ * @returns The GuildMember instance.
+ */
+export async function SFToMember(client: Client, guildID: Snowflake, member: string): Promise<GuildMember> {
+  if (!client || !(client instanceof Client)) throw new Error('Invalid client provided.');
+
+  const guild: Guild = await client.guilds.fetch(guildID);
+  let memberInstance: GuildMember = await guild.members.resolve(member);
+  if (!memberInstance) {
+    memberInstance = await guild.members.cache.find((m: GuildMember): boolean => m.user.tag.startsWith(member));
+  }
+  return memberInstance;
 }
 
 /**

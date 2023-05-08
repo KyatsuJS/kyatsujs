@@ -4,7 +4,7 @@ import { KyaClient } from './index';
  * Represents an element in the interfering commands queue.
  * Interfering commands are commands that are currently executing.
  */
-export type interferingQueueElement = [
+export type InterferingQueueElement = [
     /**
      * The name of the command.
      */
@@ -48,7 +48,7 @@ export declare class InterferingManager {
      * @param commands The names of the commands to filter by.
      * @returns The full list of the user's cool downs.
      */
-    interfering(userID: Snowflake, ...commands: string[]): interferingQueueElement[];
+    interfering(userID: Snowflake, ...commands: string[]): InterferingQueueElement[];
     /**
      * Removes an interfering commands. If a name is passed, remove all the commands with that name.
      * If an ID is passed, remove the command with the same interaction ID.

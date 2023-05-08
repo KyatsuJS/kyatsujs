@@ -1,3 +1,4 @@
+import { Client, GuildMember, Snowflake } from 'discord.js';
 /**
  * Logs a message to the console.
  * @param args The message to log.
@@ -30,6 +31,14 @@ export declare function split(): void;
  * await timeout(() => console.log('Hello world !'), 1000);
  */
 export declare function timeout(fn: (...args: any[]) => any, ms: number): Promise<any>;
+/**
+ * A function that get the GuildMember instance with the given ID.
+ * @param client The client instance.
+ * @param guildID The guild ID.
+ * @param memberID The member ID or username.
+ * @returns The GuildMember instance.
+ */
+export declare function SFToMember(client: Client, guildID: Snowflake, member: string): Promise<GuildMember>;
 /**
  * The Colors enum. These are the colors used in the embeds.
  */

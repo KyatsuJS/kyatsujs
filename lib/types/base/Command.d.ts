@@ -41,6 +41,18 @@ export interface MetaData {
      * List the guilds where the command should be executed.
      */
     guilds?: string[];
+    /**
+     * If the command is forbidden in some specific channels (use it for private bots).
+     */
+    forbiddenChannels?: string[];
+    /**
+     * If the command is forbidden for some specific users.
+     */
+    forbiddenUsers?: string[];
+    /**
+     * If the command is forbidden for some specific roles (use it for private bots).
+     */
+    forbiddenRoles?: string[];
 }
 /**
  * Default meta data fields.
@@ -74,7 +86,7 @@ export interface CommandOptions {
  * @param interaction The interaction associated with the command.
  * @returns Void.
  */
-export type commandCallback = (command: Command, interaction: ChatInputCommandInteraction | ContextMenuCommandInteraction) => Promise<void>;
+export type CommandCallback = (command: Command, interaction: ChatInputCommandInteraction | ContextMenuCommandInteraction) => Promise<void>;
 /**
  * Represents the basic command interaction.
  */
@@ -124,7 +136,7 @@ export declare class Command {
      * Set the function to be call back when the command is executed.
      * @param callback The function to call.
      */
-    set setRun(callback: commandCallback);
+    set setRun(callback: CommandCallback);
     /**
      * Get the context of the command.
      * @returns The context of the command.
