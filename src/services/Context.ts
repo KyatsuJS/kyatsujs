@@ -8,12 +8,13 @@ import {
   MessagePayload,
   EmbedBuilder,
   Message,
+  Snowflake,
 } from 'discord.js';
 
 import { APIEmbedAuthor } from 'discord-api-types/v10';
 
-import { Command } from '../base';
-import { log, Colors } from '../tools';
+import { Command, KyaClient } from '../base';
+import { log, Colors, SFToCtxChannel } from '../tools';
 
 /**
  * Represents the type for a context possible channel type among Discord package.
@@ -62,11 +63,11 @@ export class Context {
   /**
    * The channel where the action occurs.
    */
-  public readonly channel: ContextChannel;
+  private _channel: ContextChannel;
   /**
    * The command associated with the context.
    */
-  public readonly command: Command;
+  public readonly command: Command | undefined;
   /**
    * The interaction, if there is one.
    */
@@ -75,6 +76,10 @@ export class Context {
    * The users implicated in the context/action.
    */
   public readonly users: User[] | [];
+  /**
+   * The Kyatsu client instance.
+   */
+  private _client: KyaClient | undefined;
 
   /**
    * @param channel The channel where the action occurs.
@@ -82,9 +87,8 @@ export class Context {
    * @param interaction The interaction, if there is one.
    * @param users The users implicated in the context/action.
    */
-  constructor(channel: ContextChannel, command: Command, interaction?: BaseInteraction, ...users: User[] | []) {
+  constructor(channel: ContextChannel, command?: Command, interaction?: BaseInteraction, ...users: User[] | []) {
     if (!channel) throw new Error('No channel provided.');
-    if (!command || !(command instanceof Command)) throw new Error('No command passed.');
     if (interaction && !(interaction instanceof BaseInteraction)) {
       throw new Error('Interaction is not a Discord BaseInteraction instance.');
     }
@@ -92,10 +96,29 @@ export class Context {
       throw new Error('Users are not Discord User instances list.');
     }
 
-    this.channel = channel;
-    this.command = command;
-    this.interaction = interaction;
+    this._channel = channel;
+    if (this.command) {
+      if (!(command instanceof Command)) throw new Error('Command is not a Command instance.');
+      this.command = command;
+    }
+    if (this.interaction) this.interaction = interaction;
     this.users = users;
+  }
+
+  /**
+   * Get the context channel.
+   * @returns The channel instance.
+   */
+  public get channel(): ContextChannel {
+    return this._channel;
+  }
+
+  /**
+   * Set the Kyatsu client instance.
+   */
+  public set client(client: KyaClient) {
+    if (!client || !(client instanceof KyaClient)) throw new Error('Invalid client provided.');
+    this._client = client;
   }
 
   /**
@@ -104,15 +127,15 @@ export class Context {
    * @returns The message instance, or null if not sent.
    */
   public async send(messagePayload: MessagePayload | object): Promise<Message | null> {
-    if (!this.channel.isTextBased) {
+    if (!this._channel.isTextBased) {
       throw new Error('Channel is not a Discord BaseChannel instance.');
     }
-    if (!this.channel.isTextBased()) return null;
-    if (!messagePayload || !(messagePayload instanceof MessagePayload && typeof messagePayload === 'object')) {
+    if (!this._channel.isTextBased()) return null;
+    if (!messagePayload || typeof messagePayload !== 'object') {
       throw new Error('No message payload passed.');
     }
 
-    const message: void | Message = await this.channel.send(messagePayload).catch((reason: any): void => {
+    const message: void | Message = await this._channel.send(messagePayload).catch((reason: any): void => {
       log(`Message could not be sent: ${reason}`);
     });
     if (!message) return null;
@@ -129,9 +152,8 @@ export class Context {
   public async alert(
     alertData: AlertData,
     style: keyof typeof Colors = Object.keys(Colors)[0] as keyof typeof Colors,
-  ): Promise<Message | null> {
+  ): Promise<Message<boolean> | void> {
     if (!alertData || typeof alertData !== 'object') throw new Error('Invalid alert data passed.');
-    if (!this.interaction) return null;
 
     if (!style || !(style in Colors)) throw new Error('Invalid style for embed alert.');
 
@@ -171,9 +193,16 @@ export class Context {
     embed.setTitle(alertData.title);
     embed.setDescription(alertData.description);
 
+    if (!this.interaction) {
+      return await this.send({ embeds: [embed.toJSON()] }).catch((reason: any): void => {
+        log(`Message could not be sent: ${reason}`);
+      });
+    }
     if (this.interaction.isRepliable()) {
       // @ts-ignore
-      return await this.interaction.reply({ embeds: [embed.toJSON()], ephemeral: true });
+      return await this.interaction.reply({ embeds: [embed.toJSON()], ephemeral: true }).catch((reason: any): void => {
+        log(`Interaction could not be replied to: ${reason}`);
+      });
     } else {
       if (!this.interaction.isChatInputCommand()) return null;
       await this.interaction.deferReply({ ephemeral: true }).catch((reason: any): void => {
@@ -188,5 +217,24 @@ export class Context {
       if (!followedUp) return null;
       return followedUp;
     }
+  }
+
+  /**
+   * Set the context channel.
+   * @param guildId The guild ID of the channel.
+   * @param channel The channel to set.
+   * @returns The context instance.
+   */
+  public async setCtxChannel(guildId: Snowflake, channel: ContextChannel | Snowflake): Promise<this> {
+    if (!channel) throw new Error('No channel provided.');
+    if (!this.command && !this._client) throw new Error('No command and client provided.');
+
+    const client: KyaClient = this?.command?.client || this._client || undefined;
+    if (!client) throw new Error('No valid client provided.');
+
+    if (typeof channel === 'string') channel = await SFToCtxChannel(client.resolved, guildId, channel);
+
+    this._channel = channel;
+    return this;
   }
 }

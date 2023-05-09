@@ -1,4 +1,5 @@
-import { Client, GuildMember, Snowflake } from 'discord.js';
+import { Client, GuildMember, Snowflake, User } from 'discord.js';
+import { ContextChannel } from '../services';
 /**
  * Logs a message to the console.
  * @param args The message to log.
@@ -39,6 +40,21 @@ export declare function timeout(fn: (...args: any[]) => any, ms: number): Promis
  * @returns The GuildMember instance.
  */
 export declare function SFToMember(client: Client, guildID: Snowflake, member: string): Promise<GuildMember>;
+/**
+ * A function that get the User instance with the given ID.
+ * @param client The client instance.
+ * @param userID The user ID or username.
+ * @returns The User instance.
+ */
+export declare function SFToUser(client: Client, user: string): Promise<User>;
+/**
+ * A function that get the Channel instance with the given ID.
+ * @param client The client instance.
+ * @param guildID The guild ID.
+ * @param channel The channel ID or name.
+ * @returns The Channel instance.
+ */
+export declare function SFToCtxChannel(client: Client, guildID: Snowflake, channel: string): Promise<ContextChannel>;
 /**
  * The Colors enum. These are the colors used in the embeds.
  */

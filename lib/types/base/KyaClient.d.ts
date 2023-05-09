@@ -1,5 +1,6 @@
 import { Client, ClientOptions } from 'discord.js';
 import { CommandManager, EventManager, KyaClientAppearance } from './index';
+import { VoiceManager } from '../modules';
 /**
  * Represents the default events list.
  */
@@ -40,6 +41,10 @@ export declare class KyaClient {
      * The event manager instance.
      */
     readonly Events: EventManager;
+    /**
+     * The voice manager instance.
+     */
+    readonly Voice: VoiceManager;
     /**
      * The client token.
      */

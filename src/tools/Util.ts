@@ -1,4 +1,5 @@
-import { Client, Guild, GuildMember, Snowflake } from 'discord.js';
+import { Client, Guild, GuildBasedChannel, GuildMember, Snowflake, User } from 'discord.js';
+import { ContextChannel } from '../services';
 
 /**
  * Logs a message to the console.
@@ -64,6 +65,40 @@ export async function SFToMember(client: Client, guildID: Snowflake, member: str
     memberInstance = await guild.members.cache.find((m: GuildMember): boolean => m.user.tag.startsWith(member));
   }
   return memberInstance;
+}
+
+/**
+ * A function that get the User instance with the given ID.
+ * @param client The client instance.
+ * @param userID The user ID or username.
+ * @returns The User instance.
+ */
+export async function SFToUser(client: Client, user: string): Promise<User> {
+  if (!client || !(client instanceof Client)) throw new Error('Invalid client provided.');
+
+  let userInstance: User = await client.users.resolve(user);
+  if (!userInstance) {
+    userInstance = await client.users.cache.find((u: User): boolean => u.tag.startsWith(user));
+  }
+  return userInstance;
+}
+
+/**
+ * A function that get the Channel instance with the given ID.
+ * @param client The client instance.
+ * @param guildID The guild ID.
+ * @param channel The channel ID or name.
+ * @returns The Channel instance.
+ */
+export async function SFToCtxChannel(client: Client, guildID: Snowflake, channel: string): Promise<ContextChannel> {
+  if (!client || !(client instanceof Client)) throw new Error('Invalid client provided.');
+
+  const guild: Guild = await client.guilds.fetch(guildID);
+  let channelInstance: GuildBasedChannel = guild.channels.resolve(channel);
+  if (!channelInstance)
+    channelInstance = guild.channels.cache.find((c: GuildBasedChannel): boolean => c.name.startsWith(channel));
+
+  return channelInstance as ContextChannel;
 }
 
 /**

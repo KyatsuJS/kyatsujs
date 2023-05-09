@@ -1,7 +1,9 @@
-import { Client, ClientOptions, Collection, GatewayIntentBits } from 'discord.js';
+import { Client, ClientOptions, Collection, GatewayIntentBits, User } from 'discord.js';
 
 import { CommandManager, EventManager, Event, Command, CommandLocation, KyaClientAppearance } from './index';
-import { timeout } from '../tools';
+import { SFToUser, timeout } from '../tools';
+import { VoiceEvent, VoiceManager } from '../modules';
+import { Context } from '../services';
 
 /**
  * Represents the default events list.
@@ -51,6 +53,10 @@ export class KyaClient {
    */
   public readonly Events: EventManager;
   /**
+   * The voice manager instance.
+   */
+  public readonly Voice: VoiceManager;
+  /**
    * The client token.
    */
   private readonly _token: string | undefined;
@@ -88,6 +94,7 @@ export class KyaClient {
     this._token = options.token || undefined;
 
     this.resolved = new Client(options);
+    this.Voice = new VoiceManager(this);
 
     this.Events.bindEvent('ready');
   }
@@ -144,11 +151,31 @@ export class KyaClient {
     await this._prepareMethod(this, this.resolved, ...arguments);
 
     this.Events.events.each((event: Event) => {
-      const method: string = event.name === 'ready' ? 'once' : 'on';
-      (this.resolved as { [index: string]: any })[method](event.name, (...args: any[]): void => {
-        event.callback(this, ...args);
-      });
+      if (event.name !== 'voiceStateUpdate') {
+        const method: string = event.name === 'ready' ? 'once' : 'on';
+        (this.resolved as { [index: string]: any })[method](event.name, (...args: any[]): void => {
+          event.callback(this, ...args);
+        });
+      }
     });
+    if (this.Voice.events.size > 0) {
+      let event: Event = this.Events.events.find((evt: Event) => evt.name === 'voiceStateUpdate');
+      if (!event) event = new Event(this, 'voiceStateUpdate');
+
+      (this.resolved as { [index: string]: any }).on('voiceStateUpdate', async (oldState, newState): Promise<void> => {
+        const changes: VoiceEvent[] = VoiceManager.getChanges(oldState, newState);
+        const user: User = await SFToUser(this.resolved, newState.id);
+        const context: Context = new Context(newState.channel || oldState.channel, null, null, user);
+        context.client = this;
+
+        for (const voiceEvent of this.Voice.events.keys()) {
+          if (!changes.includes(voiceEvent)) continue;
+          this.Voice.events.get(voiceEvent)(changes, newState.member, context, oldState, newState);
+        }
+
+        event.callback(this, oldState, newState);
+      });
+    }
 
     const logged: string = await this.resolved.login(token || this._token);
     if (this._load) {

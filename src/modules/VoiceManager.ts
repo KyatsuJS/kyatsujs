@@ -1,16 +1,66 @@
-import { Guild, Snowflake, VoiceChannel, Client, GuildMember, GuildBasedChannel, Collection } from 'discord.js';
+import {
+  Guild,
+  Snowflake,
+  VoiceChannel,
+  Client,
+  GuildMember,
+  GuildBasedChannel,
+  Collection,
+  VoiceState,
+} from 'discord.js';
+
 import { KyaClient } from '../base';
+import { Context } from '../services';
 import { SFToMember } from '../tools';
 
 /**
+ * The list of the different voice events.
+ */
+export const VoiceEvents = [
+  'join',
+  'leave',
+  'switch',
+  'serverMute',
+  'serverUnmute',
+  'serverDeaf',
+  'serverUndeaf',
+  'selfMute',
+  'selfUnmute',
+  'selfDeaf',
+  'selfUndeaf',
+  'enableVideo',
+  'disableVideo',
+  'startStreaming',
+  'stopStreaming',
+  'stageSuppressedOn',
+  'stageSuppressedOff',
+  'askSpeakRequest',
+  'cancelSpeakRequest',
+] as const;
+/**
  * The literal type of the different voice events.
  */
-export type VoiceEvent = 'join' | 'leave' | 'mute' | 'unmute' | 'deafen' | 'undeafen';
+export type VoiceEvent = (typeof VoiceEvents)[number];
+
+/**
+ * The function type for voice events callbacks. There is one event per member.
+ * @param changes The different voice events (join, leave, mute, unmute, deafen, undeafen).
+ * @param member The member that triggered the event.
+ * @param oldState The old voice state of the member.
+ * @param newState The new voice state of the member.
+ */
+export type VoiceEventCallback = (
+  changes: VoiceEvent[],
+  member: GuildMember,
+  context: Context,
+  oldState: VoiceState,
+  newState: VoiceState,
+) => void | Promise<void>;
 
 /**
  * Represents the class that contains different statistics about voice channels.
  */
-export class Voice {
+export class VoiceManager {
   /**
    * The Discord Client instance.
    */
@@ -23,6 +73,10 @@ export class Voice {
    * The voice channel to look on.
    */
   private _contextChannel: Snowflake;
+  /**
+   * The different voice events configured by the user with their callbacks.
+   */
+  private readonly _voiceEvents: Collection<VoiceEvent, VoiceEventCallback>;
 
   /**
    * @param client The Discord Client instance.
@@ -32,6 +86,10 @@ export class Voice {
     if (client instanceof KyaClient) this.client = client.resolved;
     else if (client instanceof Client) this.client = client;
     else throw new Error('Invalid client was provided.');
+
+    this._contextGuild = '';
+    this._contextChannel = '';
+    this._voiceEvents = new Collection();
   }
 
   /**
@@ -153,5 +211,64 @@ export class Voice {
 
     if (!channelInstance) throw new Error('The channel was not found.');
     return [member, channelInstance];
+  }
+
+  /**
+   * Registers a voice event.
+   * @param event The voice event to register.
+   * @param callback The callback to call when the event is triggered.
+   * @returns Void.
+   */
+  public register(event: VoiceEvent, callback: VoiceEventCallback): void {
+    if (!event || typeof event !== 'string' || !VoiceEvents.includes(event))
+      throw new Error('Invalid event was provided.');
+    if (!callback || typeof callback !== 'function') throw new Error('Invalid callback was provided.');
+
+    this._voiceEvents.set(event, callback);
+  }
+
+  /**
+   * Unregisters a voice event.
+   * @param event The voice event to unregister.
+   * @returns Void.
+   */
+  public unregister(event: VoiceEvent): void {
+    if (!event || typeof event !== 'string' || !VoiceEvents.includes(event))
+      throw new Error('Invalid event was provided.');
+
+    this._voiceEvents.delete(event);
+  }
+
+  /**
+   * Get the list of registered voice events.
+   * @returns The list of registered voice events.
+   */
+  public get events(): Map<VoiceEvent, VoiceEventCallback> {
+    return this._voiceEvents;
+  }
+
+  /**
+   * Returns the list of changes in the voice state.
+   * @param oldState The old voice state.
+   * @param newState The new voice state.
+   * @returns The list of changes.
+   */
+  public static getChanges(oldState: VoiceState, newState: VoiceState): VoiceEvent[] {
+    const events: VoiceEvent[] = [];
+    if (!oldState.channelId && newState.channelId) events.push('join');
+    if (oldState.channelId && !newState.channelId) events.push('leave');
+    if (oldState.channelId && newState.channelId && oldState.channelId !== newState.channelId) events.push('switch');
+    if (oldState.serverDeaf !== newState.serverDeaf) events.push(newState.serverDeaf ? 'serverDeaf' : 'serverUndeaf');
+    if (oldState.serverMute !== newState.serverMute) events.push(newState.serverMute ? 'serverMute' : 'serverUnmute');
+    if (oldState.selfDeaf !== newState.selfDeaf) events.push(newState.selfDeaf ? 'selfDeaf' : 'selfUndeaf');
+    if (oldState.selfMute !== newState.selfMute) events.push(newState.selfMute ? 'selfMute' : 'selfUnmute');
+    if (oldState.selfVideo !== newState.selfVideo) events.push(newState.selfVideo ? 'enableVideo' : 'disableVideo');
+    if (oldState.streaming !== newState.streaming) events.push(newState.streaming ? 'startStreaming' : 'stopStreaming');
+    if (oldState.suppress !== newState.suppress)
+      events.push(newState.suppress ? 'stageSuppressedOn' : 'stageSuppressedOff');
+    if (oldState.requestToSpeakTimestamp !== newState.requestToSpeakTimestamp)
+      events.push(newState.requestToSpeakTimestamp ? 'askSpeakRequest' : 'cancelSpeakRequest');
+
+    return events;
   }
 }

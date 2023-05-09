@@ -1,1 +1,1 @@
-export * from './Voice';
+export * from './VoiceManager';

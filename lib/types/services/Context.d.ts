@@ -1,6 +1,6 @@
-import { BaseGuildVoiceChannel, BaseGuildTextChannel, TextBasedChannel, VoiceBasedChannel, BaseInteraction, User, MessagePayload, Message } from 'discord.js';
+import { BaseGuildVoiceChannel, BaseGuildTextChannel, TextBasedChannel, VoiceBasedChannel, BaseInteraction, User, MessagePayload, Message, Snowflake } from 'discord.js';
 import { APIEmbedAuthor } from 'discord-api-types/v10';
-import { Command } from '../base';
+import { Command, KyaClient } from '../base';
 import { Colors } from '../tools';
 /**
  * Represents the type for a context possible channel type among Discord package.
@@ -47,11 +47,11 @@ export declare class Context {
     /**
      * The channel where the action occurs.
      */
-    readonly channel: ContextChannel;
+    private _channel;
     /**
      * The command associated with the context.
      */
-    readonly command: Command;
+    readonly command: Command | undefined;
     /**
      * The interaction, if there is one.
      */
@@ -61,12 +61,25 @@ export declare class Context {
      */
     readonly users: User[] | [];
     /**
+     * The Kyatsu client instance.
+     */
+    private _client;
+    /**
      * @param channel The channel where the action occurs.
      * @param command The command associated with the context.
      * @param interaction The interaction, if there is one.
      * @param users The users implicated in the context/action.
      */
-    constructor(channel: ContextChannel, command: Command, interaction?: BaseInteraction, ...users: User[] | []);
+    constructor(channel: ContextChannel, command?: Command, interaction?: BaseInteraction, ...users: User[] | []);
+    /**
+     * Get the context channel.
+     * @returns The channel instance.
+     */
+    get channel(): ContextChannel;
+    /**
+     * Set the Kyatsu client instance.
+     */
+    set client(client: KyaClient);
     /**
      * Send a message in a text based channel (text, thread, announcements...).
      * @param messagePayload The message data to send (Discord.<MessagePayload>).
@@ -79,5 +92,12 @@ export declare class Context {
      * @param style The style of the alert.
      * @returns The message instance, or null if not sent.
      */
-    alert(alertData: AlertData, style?: keyof typeof Colors): Promise<Message | null>;
+    alert(alertData: AlertData, style?: keyof typeof Colors): Promise<Message<boolean> | void>;
+    /**
+     * Set the context channel.
+     * @param guildId The guild ID of the channel.
+     * @param channel The channel to set.
+     * @returns The context instance.
+     */
+    setCtxChannel(guildId: Snowflake, channel: ContextChannel | Snowflake): Promise<this>;
 }
