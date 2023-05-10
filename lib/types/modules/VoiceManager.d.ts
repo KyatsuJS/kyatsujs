@@ -16,7 +16,7 @@ export type VoiceEvent = (typeof VoiceEvents)[number];
  * @param oldState The old voice state of the member.
  * @param newState The new voice state of the member.
  */
-export type VoiceEventCallback = (changes: VoiceEvent[], member: GuildMember, context: Context, oldState: VoiceState, newState: VoiceState) => void | Promise<void>;
+export type VoiceEventCallback = (changes: VoiceEvent[], member: GuildMember, context: Context) => void | Promise<void>;
 /**
  * Represents the class that contains different statistics about voice channels.
  */

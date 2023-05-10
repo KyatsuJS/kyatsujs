@@ -170,7 +170,7 @@ export class KyaClient {
 
         for (const voiceEvent of this.Voice.events.keys()) {
           if (!changes.includes(voiceEvent)) continue;
-          this.Voice.events.get(voiceEvent)(changes, newState.member, context, oldState, newState);
+          this.Voice.events.get(voiceEvent)(changes, newState.member, context);
         }
 
         event.callback(this, oldState, newState);
